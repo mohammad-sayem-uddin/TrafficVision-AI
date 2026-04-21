@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% block title %}Traffic Violation AI{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<section class="home-hero mb-5">
+    <div class="hero-grid">
+        <div class="hero-content">
+            <span class="hero-badge">
+                <i class="bi bi-cpu"></i>
+                AI SaaS Dashboard
+            </span>
+
+            <h1 class="hero-title">
+                Smarter helmet violation detection for modern traffic enforcement.
+            </h1>
+
+            <p class="hero-subtitle">
+                Analyze traffic video with a dark, intelligent workflow that detects rider helmet compliance,
+                generates evidence, and turns raw footage into actionable enforcement insights.
+            </p>
+
+            <div class="hero-actions">
+                <a href="/upload" class="btn hero-btn hero-btn-primary">
+                    <i class="bi bi-play-circle"></i>
+                    Start AI Analysis
+                </a>
+
+                <a href="/violations" class="btn hero-btn hero-btn-secondary">
+                    <i class="bi bi-bar-chart-line"></i>
+                    View Violation Dashboard
+                </a>
+            </div>
+
+            <div class="hero-proof">
+                <div class="proof-item">
+                    <strong>YOLOv8 Powered</strong>
+                    <span>Detection tuned for helmet compliance analysis.</span>
+                </div>
+                <div class="proof-item">
+                    <strong>Evidence Ready</strong>
+                    <span>Faces and plate assets prepared for review workflows.</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="hero-visual">
+            <div class="hero-glow-card">
+                <div class="hero-card-top">
+                    <span class="pulse-dot"></span>
+                    <span class="hero-card-label">Live Analysis Preview</span>
+                </div>
+
+                <div class="hero-metrics">
+                    <div class="metric-card">
+                        <span class="metric-label">Detection Mode</span>
+                        <strong class="metric-value">Offline AI Scan</strong>
+                    </div>
+                    <div class="metric-card">
+                        <span class="metric-label">Primary Output</span>
+                        <strong class="metric-value">Evidence + Dashboard</strong>
+                    </div>
+                </div>
+
+                <div class="hero-chart-mock">
+                    <div class="chart-header">
+                        <span>Compliance Pattern</span>
+                        <span class="chart-pill">AI Active</span>
+                    </div>
+                    <div class="chart-bars">
+                        <span style="height: 42%;"></span>
+                        <span style="height: 68%;"></span>
+                        <span style="height: 54%;"></span>
+                        <span style="height: 84%;"></span>
+                        <span style="height: 74%;"></span>
+                        <span style="height: 92%;"></span>
+                    </div>
+                </div>
+
+                <div class="hero-stat-strip">
+                    <div>
+                        <span class="strip-label">Evidence Flow</span>
+                        <strong>Automated</strong>
+                    </div>
+                    <div>
+                        <span class="strip-label">Review Ready</span>
+                        <strong>History + Analytics</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="row g-4 mb-5">
+    <div class="col-md-6 col-xl-3">
+        <div class="feature-card h-100">
+            <div class="feature-card-top">
+                <div class="feature-icon"><i class="bi bi-brilliance"></i></div>
+                <span class="feature-chip">AI Vision</span>
+            </div>
+            <h5>Intelligent Detection</h5>
+            <p>AI models identify helmet and no-helmet cases from uploaded traffic footage with production-style clarity.</p>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <div class="feature-card h-100">
+            <div class="feature-card-top">
+                <div class="feature-icon"><i class="bi bi-camera-video"></i></div>
+                <span class="feature-chip">Forensics</span>
+            </div>
+            <h5>Evidence Generation</h5>
+            <p>Detected violations produce cropped evidence assets that can be reviewed, downloaded, and tracked.</p>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <div class="feature-card h-100">
+            <div class="feature-card-top">
+                <div class="feature-icon"><i class="bi bi-shield-check"></i></div>
+                <span class="feature-chip">Secure Flow</span>
+            </div>
+            <h5>Offline Processing</h5>
+            <p>Upload video files directly and run the analysis pipeline without depending on a live CCTV feed.</p>
+        </div>
+    </div>
+
+    <div class="col-md-6 col-xl-3">
+        <div class="feature-card h-100 feature-card-accent">
+            <div class="feature-card-top">
+                <div class="feature-icon"><i class="bi bi-window-stack"></i></div>
+                <span class="feature-chip">Insights</span>
+            </div>
+            <h5>Dashboard History</h5>
+            <p>Review previously processed violations, analytics, evidence images, and processing insights in one place.</p>
+            <a href="/history" class="feature-link">
+                Open History
+                <i class="bi bi-arrow-up-right"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="info-shell mb-5">
+    <div class="row g-4 align-items-center">
+        <div class="col-lg-7">
+            <div class="info-card">
+                <span class="section-kicker">Workflow</span>
+                <h3>How the AI enforcement flow works</h3>
+                <p>
+                    The system follows a simple four-step path from uploaded footage to reviewable evidence and
+                    dashboard-ready analytics.
+                </p>
+
+                <div class="workflow-grid">
+                    <div class="workflow-step">
+                        <span>01</span>
+                        <strong>Upload</strong>
+                        <p>Traffic footage enters the analysis pipeline.</p>
+                    </div>
+                    <div class="workflow-step">
+                        <span>02</span>
+                        <strong>Detect</strong>
+                        <p>Helmet compliance is identified frame by frame.</p>
+                    </div>
+                    <div class="workflow-step">
+                        <span>03</span>
+                        <strong>Analyze</strong>
+                        <p>Violations are counted and visual evidence is prepared.</p>
+                    </div>
+                    <div class="workflow-step">
+                        <span>04</span>
+                        <strong>Review</strong>
+                        <p>Processed video and violation history become available.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-5">
+            <div class="info-card info-card-highlight">
+                <span class="section-kicker">Extension</span>
+                <h3>Built for automated penalty workflows</h3>
+                <p>
+                    The platform is ready to support future e-challan or penalty integrations with structured
+                    evidence and database-backed violation records.
+                </p>
+
+                <ul class="benefit-list">
+                    <li><i class="bi bi-check2-circle"></i> Automatic violation identification</li>
+                    <li><i class="bi bi-check2-circle"></i> Evidence-backed enforcement records</li>
+                    <li><i class="bi bi-check2-circle"></i> Traceable rider and vehicle review flow</li>
+                </ul>
+
+                <span class="future-pill">Future Extension Module</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="final-cta text-center mb-4">
+    <span class="section-kicker">Get Started</span>
+    <h3>Experience a modern AI traffic enforcement workflow</h3>
+    <p>Upload a video, generate evidence, and review violations in a polished dark dashboard.</p>
+
+    <div class="hero-actions justify-content-center">
+        <a href="/upload" class="btn hero-btn hero-btn-primary">
+            <i class="bi bi-upload"></i>
+            Upload Traffic Video
+        </a>
+        <a href="/violations" class="btn hero-btn hero-btn-secondary">
+            <i class="bi bi-activity"></i>
+            View Violations
+        </a>
+    </div>
+</section>
+{% endblock %}

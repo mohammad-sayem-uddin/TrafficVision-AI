@@ -1,0 +1,17 @@
+TrafficVision AI System Architecture
+
+Input Video
+   ↓
+YOLO Detection
+   ↓
+Motorcycle Detection
+   ↓
+Rider Association
+   ↓
+Helmet Detection
+   ↓
+Violation Detection
+   ↓
+Evidence Generation
+   ↓
+Web Interface

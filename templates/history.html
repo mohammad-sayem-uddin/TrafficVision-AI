@@ -1,0 +1,603 @@
+{% extends "base.html" %}
+{% block title %}Violation History | Traffic Violation AI{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    .history-dashboard {
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --border: rgba(148, 163, 184, 0.18);
+        --accent: #38bdf8;
+        --danger: #fb7185;
+        font-family: "Manrope", sans-serif;
+        color: var(--text);
+    }
+
+    .history-shell {
+        position: relative;
+        overflow: hidden;
+        padding: 2.5rem;
+        border-radius: 28px;
+        background:
+            radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 28%),
+            radial-gradient(circle at top right, rgba(251, 113, 133, 0.1), transparent 24%),
+            linear-gradient(180deg, rgba(8, 15, 29, 0.98), rgba(7, 14, 26, 0.96));
+        border: 1px solid var(--border);
+        box-shadow: 0 28px 60px rgba(2, 6, 23, 0.42);
+    }
+
+    .history-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.5rem 0.95rem;
+        border-radius: 999px;
+        background: rgba(56, 189, 248, 0.14);
+        border: 1px solid rgba(56, 189, 248, 0.24);
+        color: #bae6fd;
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .history-title {
+        font-size: clamp(2rem, 4vw, 3.2rem);
+        font-weight: 800;
+        line-height: 1.05;
+        letter-spacing: -0.04em;
+        margin-top: 1rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .history-copy {
+        color: var(--muted);
+        max-width: 760px;
+        line-height: 1.8;
+        margin-bottom: 2rem;
+    }
+
+    .summary-card,
+    .filter-panel,
+    .table-panel {
+        background: linear-gradient(180deg, rgba(18, 29, 48, 0.95), rgba(11, 20, 36, 0.96));
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .summary-card {
+        padding: 1.4rem;
+        height: 100%;
+    }
+
+    .summary-label {
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-size: 0.76rem;
+        font-weight: 700;
+        margin-bottom: 0.7rem;
+    }
+
+    .summary-value {
+        font-size: clamp(1.9rem, 3vw, 2.5rem);
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        margin-bottom: 0.35rem;
+    }
+
+    .summary-note {
+        color: #cbd5e1;
+        margin-bottom: 0;
+    }
+
+    .filter-panel,
+    .table-panel {
+        padding: 1.5rem;
+    }
+
+    .panel-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 0.35rem;
+    }
+
+    .panel-copy {
+        color: var(--muted);
+        margin-bottom: 0;
+    }
+
+    .filter-input,
+    .filter-select {
+        min-height: 52px;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: rgba(15, 23, 42, 0.88);
+        color: #e2e8f0;
+        box-shadow: none;
+    }
+
+    .filter-input:focus,
+    .filter-select:focus {
+        background: rgba(15, 23, 42, 0.98);
+        color: #f8fafc;
+        border-color: rgba(56, 189, 248, 0.42);
+        box-shadow: 0 0 0 0.2rem rgba(56, 189, 248, 0.12);
+    }
+
+    .filter-select option {
+        color: #0f172a;
+    }
+
+    .filter-btn,
+    .reset-btn {
+        min-height: 52px;
+        border-radius: 14px;
+        font-weight: 700;
+    }
+
+    .filter-btn {
+        background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+        border: none;
+        color: #eff6ff;
+    }
+
+    .filter-btn:hover {
+        color: #eff6ff;
+        background: linear-gradient(135deg, #0284c7, #0ea5e9);
+    }
+
+    .reset-btn {
+        background: rgba(15, 23, 42, 0.92);
+        color: var(--text);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .reset-btn:hover {
+        color: #f8fafc;
+        background: rgba(30, 41, 59, 0.96);
+    }
+
+    .history-table {
+        margin-bottom: 0;
+        --bs-table-bg: transparent;
+        --bs-table-color: #e2e8f0;
+        --bs-table-border-color: rgba(148, 163, 184, 0.12);
+        vertical-align: middle;
+    }
+
+    .history-table thead th {
+        border-bottom: 1px solid rgba(148, 163, 184, 0.18);
+        color: #cbd5e1;
+        font-size: 0.78rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        white-space: nowrap;
+    }
+
+    .history-table tbody td {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+
+    .date-chip,
+    .type-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.55rem 0.85rem;
+        border-radius: 999px;
+        font-size: 0.88rem;
+        font-weight: 600;
+    }
+
+    .date-chip {
+        background: rgba(15, 23, 42, 0.86);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        color: #cbd5e1;
+    }
+
+    .type-chip {
+        background: rgba(251, 113, 133, 0.12);
+        border: 1px solid rgba(251, 113, 133, 0.22);
+        color: #fecdd3;
+        text-transform: capitalize;
+    }
+
+    .evidence-thumb {
+        width: 92px;
+        height: 92px;
+        object-fit: cover;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: #020617;
+        cursor: zoom-in;
+        transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .evidence-thumb:hover {
+        transform: translateY(-3px);
+        border-color: rgba(56, 189, 248, 0.34);
+        box-shadow: 0 14px 28px rgba(2, 6, 23, 0.28);
+    }
+
+    .view-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        color: #7dd3fc;
+        text-decoration: none;
+        font-weight: 700;
+        margin-top: 0.7rem;
+    }
+
+    .view-link:hover {
+        color: #bae6fd;
+    }
+
+    .image-preview-modal .modal-content {
+        background: rgba(7, 14, 26, 0.96);
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 24px;
+        box-shadow: 0 28px 60px rgba(2, 6, 23, 0.48);
+        transform: scale(0.94);
+        opacity: 0;
+        transition: transform 0.28s ease, opacity 0.28s ease;
+    }
+
+    .image-preview-modal.show .modal-content {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    .image-preview-modal .modal-header {
+        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        padding: 1rem 1.25rem 0.8rem;
+    }
+
+    .image-preview-modal .modal-title {
+        color: #f8fafc;
+        font-weight: 700;
+    }
+
+    .image-preview-modal .btn-close {
+        filter: invert(1) grayscale(1);
+        opacity: 0.8;
+    }
+
+    .image-preview-modal .btn-close:hover {
+        opacity: 1;
+    }
+
+    .image-preview-modal .modal-body {
+        padding: 1rem 1.25rem 1.25rem;
+    }
+
+    .image-preview-modal .modal-body img {
+        width: 100%;
+        max-height: 78vh;
+        object-fit: contain;
+        border-radius: 18px;
+        background: #020617;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .modal-backdrop.show {
+        background-color: rgba(2, 6, 23, 0.82);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--muted);
+    }
+
+    .empty-state i {
+        font-size: 2.4rem;
+        margin-bottom: 1rem;
+        display: block;
+        color: #7dd3fc;
+    }
+
+    .pagination-bar {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        margin-top: 1.5rem;
+    }
+
+    .pagination-summary {
+        color: var(--muted);
+        margin-bottom: 0;
+    }
+
+    .pagination .page-link {
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: rgba(15, 23, 42, 0.92);
+        color: #cbd5e1;
+        border-radius: 12px;
+        margin: 0 0.18rem;
+        min-width: 42px;
+        text-align: center;
+    }
+
+    .pagination .page-link:hover {
+        background: rgba(30, 41, 59, 0.96);
+        color: #f8fafc;
+    }
+
+    .pagination .page-item.active .page-link {
+        background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+        border-color: transparent;
+        color: #eff6ff;
+    }
+
+    .pagination .page-item.disabled .page-link {
+        opacity: 0.45;
+        background: rgba(15, 23, 42, 0.7);
+        color: #94a3b8;
+    }
+
+    @media (max-width: 991.98px) {
+        .history-shell {
+            padding: 1.5rem;
+            border-radius: 24px;
+        }
+    }
+
+    @media (max-width: 767.98px) {
+        .pagination-bar {
+            flex-direction: column;
+            align-items: stretch;
+        }
+    }
+</style>
+
+<div class="history-dashboard">
+    <section class="history-shell">
+        <span class="history-badge">
+            <i class="bi bi-clock-history"></i>
+            Violation Archive
+        </span>
+        <h1 class="history-title">Violation History</h1>
+        <p class="history-copy">
+            Browse previously detected violations stored in the database, search for specific records, and review
+            the supporting evidence in a clean, paginated history view.
+        </p>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-6 col-xl-4">
+                <div class="summary-card">
+                    <div class="summary-label">Total Records</div>
+                    <div class="summary-value">{{ total_violations }}</div>
+                    <p class="summary-note">All violations currently stored in the database.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="summary-card">
+                    <div class="summary-label">Filtered Results</div>
+                    <div class="summary-value">{{ filtered_violations }}</div>
+                    <p class="summary-note">Records matching your current search and filter criteria.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="summary-card">
+                    <div class="summary-label">Current Page</div>
+                    <div class="summary-value">{{ pagination.page }}</div>
+                    <p class="summary-note">Page {{ pagination.page }} of {{ pagination.pages or 1 }} in the history list.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="filter-panel mb-4">
+            <div class="mb-3">
+                <div class="panel-title">Search and Filter</div>
+                <p class="panel-copy">Filter by violation type or search by date, type, or video name.</p>
+            </div>
+
+            <form method="GET" action="{{ url_for('violations') }}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-lg-5">
+                        <label for="searchInput" class="form-label fw-semibold text-light">Search</label>
+                        <input
+                            id="searchInput"
+                            type="text"
+                            name="q"
+                            class="form-control filter-input"
+                            value="{{ search_query }}"
+                            placeholder="Search by date, type, or video name"
+                        >
+                    </div>
+                    <div class="col-lg-3">
+                        <label for="typeSelect" class="form-label fw-semibold text-light">Violation Type</label>
+                        <select id="typeSelect" name="type" class="form-select filter-select">
+                            <option value="">All Types</option>
+                            {% for type in violation_types %}
+                            <option value="{{ type }}" {% if selected_type == type %}selected{% endif %}>
+                                {{ type.replace('_', ' ')|title }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <button type="submit" class="btn filter-btn w-100">
+                            <i class="bi bi-search"></i>
+                            Search
+                        </button>
+                    </div>
+                    <div class="col-lg-2 col-md-6">
+                        <a href="{{ url_for('violations') }}" class="btn reset-btn w-100">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                            Reset
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-panel">
+            <div class="mb-3">
+                <div class="panel-title">Stored Violations</div>
+                <p class="panel-copy">Historical records with timestamps, violation labels, and evidence snapshots.</p>
+            </div>
+
+            {% if violations %}
+            <div class="table-responsive">
+                <table class="table history-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Date &amp; Time</th>
+                            <th>Violation Type</th>
+                            <th>Evidence Image</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for violation in violations %}
+                        <tr>
+                            <td>
+                                <span class="date-chip">
+                                    <i class="bi bi-calendar-event"></i>
+                                    {{ violation.date_time }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="type-chip">
+                                    <i class="bi bi-exclamation-octagon"></i>
+                                    {{ violation.violation_type.replace('_', ' ')|title }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if violation.evidence_image %}
+                                <img
+                                    src="{{ violation.evidence_image }}"
+                                    alt="Evidence image for violation {{ violation.id }}"
+                                    class="evidence-thumb preview-trigger"
+                                    data-preview-src="{{ violation.evidence_image }}"
+                                    data-preview-title="{{ violation.violation_type.replace('_', ' ')|title }} Evidence"
+                                >
+                                <br>
+                                <a
+                                    href="{{ violation.evidence_image }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="view-link"
+                                >
+                                    <i class="bi bi-box-arrow-up-right"></i>
+                                    View full image
+                                </a>
+                                {% else %}
+                                <span class="text-secondary">No evidence available</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="pagination-bar">
+                <p class="pagination-summary">
+                    Showing {{ violations|length }} record{% if violations|length != 1 %}s{% endif %} on this page.
+                </p>
+
+                {% if pagination.pages > 1 %}
+                <nav aria-label="Violation history pagination">
+                    <ul class="pagination mb-0">
+                        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+                            <a
+                                class="page-link"
+                                href="{{ url_for('violations', page=pagination.prev_num, q=search_query, type=selected_type) }}"
+                            >
+                                Prev
+                            </a>
+                        </li>
+
+                        {% for page_num in pagination.iter_pages(left_edge=1, left_current=1, right_current=2, right_edge=1) %}
+                            {% if page_num %}
+                            <li class="page-item {% if page_num == pagination.page %}active{% endif %}">
+                                <a
+                                    class="page-link"
+                                    href="{{ url_for('violations', page=page_num, q=search_query, type=selected_type) }}"
+                                >
+                                    {{ page_num }}
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">…</span>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+                            <a
+                                class="page-link"
+                                href="{{ url_for('violations', page=pagination.next_num, q=search_query, type=selected_type) }}"
+                            >
+                                Next
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                {% endif %}
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="bi bi-folder2-open"></i>
+                <h4 class="text-light">No violations found</h4>
+                <p class="mb-0">Try changing your search or filter settings, or process a new video to create records.</p>
+            </div>
+            {% endif %}
+        </div>
+    </section>
+</div>
+
+<div class="modal fade image-preview-modal" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imagePreviewTitle">Evidence Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <img id="imagePreviewTarget" src="" alt="Evidence preview">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const imagePreviewModalEl = document.getElementById('imagePreviewModal');
+const imagePreviewTarget = document.getElementById('imagePreviewTarget');
+const imagePreviewTitle = document.getElementById('imagePreviewTitle');
+
+if (imagePreviewModalEl && imagePreviewTarget && imagePreviewTitle) {
+    const imagePreviewModal = new bootstrap.Modal(imagePreviewModalEl);
+
+    document.querySelectorAll('.preview-trigger').forEach((image) => {
+        image.addEventListener('click', () => {
+            imagePreviewTarget.src = image.dataset.previewSrc || image.src;
+            imagePreviewTarget.alt = image.alt || 'Evidence preview';
+            imagePreviewTitle.textContent = image.dataset.previewTitle || 'Evidence Preview';
+            imagePreviewModal.show();
+        });
+    });
+
+    imagePreviewModalEl.addEventListener('hidden.bs.modal', () => {
+        imagePreviewTarget.src = '';
+    });
+}
+</script>
+{% endblock %}

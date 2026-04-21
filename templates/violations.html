@@ -1,0 +1,198 @@
+{% extends "base.html" %}
+{% block title %}Violation Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<!-- ===== DASHBOARD HEADER ===== -->
+
+<div style="text-align:center;margin-bottom:40px;">
+
+<h2 style="font-weight:700;">
+🚦 Smart Traffic Violation Dashboard
+</h2>
+
+<p style="color:#777;">
+AI-powered helmet violation monitoring system
+</p>
+
+</div>
+
+<!-- ===== STATISTICS CARDS ===== -->
+
+<div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:40px;">
+
+<div style="
+flex:1;
+background:rgba(255,255,255,0.08);
+padding:30px;
+border-radius:16px;
+text-align:center;
+box-shadow:0 8px 20px rgba(0,0,0,0.2);
+">
+
+<h2 style="color:#ff4d4f;font-weight:700;">
+{{ violations|length }}
+</h2>
+
+<p style="color:#aaa;margin:0;">
+Total Violations
+</p>
+
+</div>
+
+<div style="
+flex:1;
+background:rgba(255,255,255,0.08);
+padding:30px;
+border-radius:16px;
+text-align:center;
+box-shadow:0 8px 20px rgba(0,0,0,0.2);
+">
+
+<h2 style="color:#2f7df6;font-weight:700;">
+{{ violations|map(attribute='video_name')|unique|list|length }}
+</h2>
+
+<p style="color:#aaa;margin:0;">
+Videos Processed
+</p>
+
+</div>
+
+<div style="
+flex:1;
+background:rgba(255,255,255,0.08);
+padding:30px;
+border-radius:16px;
+text-align:center;
+box-shadow:0 8px 20px rgba(0,0,0,0.2);
+">
+
+<h2 style="color:#2ecc71;font-weight:700;">
+AI
+</h2>
+
+<p style="color:#aaa;margin:0;">
+Detection System Active
+</p>
+
+</div>
+
+</div>
+
+<!-- ===== VIOLATION TABLE ===== -->
+
+<div style="
+background:white;
+border-radius:16px;
+overflow:hidden;
+box-shadow:0 10px 30px rgba(0,0,0,0.25);
+">
+
+<div style="
+padding:16px 20px;
+background:linear-gradient(135deg,#141e30,#243b55);
+color:white;
+font-weight:600;
+font-size:18px;
+">
+
+🚨 Detected Violations
+
+</div>
+
+<table style="
+width:100%;
+border-collapse:collapse;
+font-size:14px;
+">
+
+<thead style="
+background:#1c1c1c;
+color:white;
+">
+
+<tr>
+
+<th style="padding:14px;text-align:left;">ID</th>
+<th style="padding:14px;text-align:left;">Video</th>
+<th style="padding:14px;text-align:left;">Violation</th>
+<th style="padding:14px;text-align:left;">Date</th>
+<th style="padding:14px;text-align:left;">Evidence</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for v in violations %}
+
+<tr style="
+border-bottom:1px solid #eee;
+">
+
+<td style="padding:14px;font-weight:600;">
+{{ v.id }}
+</td>
+
+<td style="padding:14px;color:#666;max-width:220px;">
+{{ v.video_name[:35] }}...
+</td>
+
+<td style="padding:14px;">
+
+<span style="
+background:#ff4d4f;
+color:white;
+padding:6px 14px;
+border-radius:20px;
+font-size:13px;
+">
+
+⚠ No Helmet
+
+</span>
+
+</td>
+
+<td style="padding:14px;color:#777;">
+{{ v.date_time }}
+</td>
+
+<td style="padding:14px;">
+
+<a
+href="{{ url_for('static', filename=v.evidence_image) }}"
+target="_blank"
+style="
+background:#1677ff;
+color:white;
+padding:8px 14px;
+border-radius:8px;
+text-decoration:none;
+font-size:13px;
+display:inline-block;
+">
+
+View Evidence
+
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+{% endblock %}

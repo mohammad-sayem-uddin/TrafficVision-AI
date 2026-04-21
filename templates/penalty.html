@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}E-Challan & Penalty System{% endblock %}
+
+{% block content %}
+
+<h2 class="mb-4">Automated E-Challan & Penalty System</h2>
+
+<!-- ================= OVERVIEW ================= -->
+<div class="card p-4 mb-4">
+    <p class="text-muted">
+        This module demonstrates how AI-detected helmet violations can be transformed
+        into automated digital penalties (e-challans) backed by visual evidence.
+    </p>
+
+    <span class="badge bg-warning text-dark">
+        Conceptual / Research Demonstration
+    </span>
+</div>
+
+<!-- ================= MOCK CHALLAN ================= -->
+<div class="card p-4 mb-4">
+    <h5 class="mb-3">Generated Violation Record (Sample)</h5>
+
+    <table class="table table-dark table-borderless">
+        <tr>
+            <th>Violation ID</th>
+            <td>TV-AI-10293</td>
+        </tr>
+        <tr>
+            <th>Violation Type</th>
+            <td>No Helmet Detected</td>
+        </tr>
+        <tr>
+            <th>Vehicle Type</th>
+            <td>Motorcycle</td>
+        </tr>
+        <tr>
+            <th>Penalty Amount</th>
+            <td>৳ 1,000</td>
+        </tr>
+        <tr>
+            <th>Detection Method</th>
+            <td>AI-Based Video Analysis</td>
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td>
+                <span class="badge bg-danger">Unpaid</span>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- ================= WORKFLOW ================= -->
+<div class="card p-4 mb-4">
+    <h5 class="mb-3">Penalty Generation Workflow</h5>
+
+    <ol class="text-muted">
+        <li>Traffic video is analyzed offline by AI models</li>
+        <li>Helmet violation is detected</li>
+        <li>Rider–vehicle association ensures correctness</li>
+        <li>Visual evidence (face & plate) is generated</li>
+        <li>Violation record is created</li>
+        <li>Penalty amount is assigned based on traffic rules</li>
+    </ol>
+</div>
+
+<!-- ================= FUTURE INTEGRATION ================= -->
+<div class="card p-4 mb-5">
+    <h5 class="mb-3">Future Integration Possibilities</h5>
+
+    <ul class="text-muted">
+        <li>✔ Government e-challan systems</li>
+        <li>✔ SMS / Email notification to vehicle owner</li>
+        <li>✔ Online payment gateways</li>
+        <li>✔ National vehicle registration databases</li>
+        <li>✔ Smart city traffic dashboards</li>
+    </ul>
+</div>
+
+<div class="text-center">
+    <a href="/" class="btn btn-secondary me-2">← Back to Home</a>
+    <a href="/upload" class="btn btn-primary">Analyze Video</a>
+</div>
+
+{% endblock %}

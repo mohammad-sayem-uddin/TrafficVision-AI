@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+*.pyc
+.DS_Store
+runs/
+dataset/
+datasets/
+static/uploads/
+static/outputs/
+*.mp4
+*.mov
+*.MOV
+*.jpg
+*.png

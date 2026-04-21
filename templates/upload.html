@@ -1,0 +1,1344 @@
+{% extends "base.html" %}
+{% block title %}Upload Video | Traffic Violation AI{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    body.is-processing {
+        overflow: hidden;
+    }
+
+    .upload-dashboard {
+        --panel: rgba(10, 18, 33, 0.9);
+        --panel-soft: rgba(17, 24, 39, 0.82);
+        --border: rgba(148, 163, 184, 0.18);
+        --text: #e2e8f0;
+        --muted: #94a3b8;
+        --accent: #38bdf8;
+        --accent-strong: #0ea5e9;
+        --accent-cyan: #67e8f9;
+        --accent-deep: #2563eb;
+        --font: "Manrope", sans-serif;
+        position: relative;
+        isolation: isolate;
+        font-family: var(--font);
+        color: var(--text);
+        animation: pageReveal 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .upload-dashboard::before,
+    .upload-dashboard::after {
+        content: "";
+        position: fixed;
+        inset: auto;
+        pointer-events: none;
+        z-index: -1;
+        filter: blur(18px);
+        opacity: 0.7;
+    }
+
+    .upload-dashboard::before {
+        top: 4%;
+        left: -6%;
+        width: 320px;
+        height: 320px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(56, 189, 248, 0.16), transparent 65%);
+        animation: ambientFloatOne 19s ease-in-out infinite;
+    }
+
+    .upload-dashboard::after {
+        right: -5%;
+        bottom: 8%;
+        width: 280px;
+        height: 280px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(14, 165, 233, 0.12), transparent 68%);
+        animation: ambientFloatTwo 22s ease-in-out infinite;
+    }
+
+    .upload-shell {
+        position: relative;
+        overflow: hidden;
+        padding: 2.5rem;
+        border-radius: 28px;
+        background:
+            radial-gradient(circle at top left, rgba(56, 189, 248, 0.16), transparent 28%),
+            radial-gradient(circle at bottom right, rgba(14, 165, 233, 0.14), transparent 30%),
+            linear-gradient(180deg, rgba(7, 14, 26, 0.96), rgba(10, 18, 33, 0.94));
+        border: 1px solid var(--border);
+        box-shadow: 0 28px 60px rgba(2, 6, 23, 0.4);
+    }
+
+    .upload-shell::before {
+        content: "";
+        position: absolute;
+        inset: auto auto -60px -60px;
+        width: 200px;
+        height: 200px;
+        border-radius: 50%;
+        background: rgba(56, 189, 248, 0.08);
+        filter: blur(10px);
+        pointer-events: none;
+    }
+
+    .upload-shell::after {
+        content: "";
+        position: absolute;
+        inset: -120px auto auto 58%;
+        width: 280px;
+        height: 280px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(103, 232, 249, 0.11), transparent 65%);
+        filter: blur(14px);
+        pointer-events: none;
+    }
+
+    .upload-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.5rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(56, 189, 248, 0.14);
+        border: 1px solid rgba(56, 189, 248, 0.22);
+        color: #bae6fd;
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    .upload-title {
+        font-size: clamp(2rem, 4vw, 3.1rem);
+        font-weight: 800;
+        line-height: 1.05;
+        letter-spacing: -0.04em;
+        margin-top: 1rem;
+        margin-bottom: 0.9rem;
+    }
+
+    .upload-copy {
+        color: var(--muted);
+        font-size: 1rem;
+        line-height: 1.8;
+        max-width: 720px;
+        margin-bottom: 2rem;
+    }
+
+    .upload-card,
+    .upload-info {
+        background: linear-gradient(180deg, rgba(18, 29, 48, 0.95), rgba(11, 20, 36, 0.96));
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        height: 100%;
+        transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+    }
+
+    .upload-card {
+        padding: 1.75rem;
+    }
+
+    .upload-info {
+        padding: 1.5rem;
+    }
+
+    .upload-card:hover,
+    .upload-info:hover {
+        transform: translateY(-4px);
+        border-color: rgba(103, 232, 249, 0.2);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 36px rgba(2, 6, 23, 0.22);
+    }
+
+    .section-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 0.4rem;
+    }
+
+    .section-copy {
+        color: var(--muted);
+        margin-bottom: 1.4rem;
+    }
+
+    .mode-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.55rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.72);
+        border: 1px solid rgba(103, 232, 249, 0.14);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+        margin-bottom: 1.15rem;
+        font-size: 0.98rem;
+        font-weight: 800;
+        color: #dbeafe;
+        letter-spacing: 0.01em;
+    }
+
+    .segmented-mode {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-bottom: 1.25rem;
+        padding: 0.45rem;
+        border-radius: 18px;
+        background: rgba(15, 23, 42, 0.76);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+        isolation: isolate;
+    }
+
+    .segmented-mode::after {
+        content: "";
+        position: absolute;
+        inset: 7px;
+        border-radius: 14px;
+        background: linear-gradient(90deg, rgba(56, 189, 248, 0.08), rgba(37, 99, 235, 0.04));
+        opacity: 0.8;
+        z-index: -1;
+    }
+
+    .mode-input {
+        position: absolute;
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .mode-chip {
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        min-height: 58px;
+        border-radius: 14px;
+        color: #9fb4c8;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+        cursor: pointer;
+        overflow: hidden;
+        transition: transform 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    }
+
+    .mode-chip::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.12), rgba(37, 99, 235, 0.08));
+        opacity: 0;
+        transition: opacity 0.25s ease;
+    }
+
+    .mode-chip::after {
+        content: "";
+        position: absolute;
+        inset: auto 14% -18px 14%;
+        height: 28px;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(56, 189, 248, 0.32), transparent 70%);
+        filter: blur(12px);
+        opacity: 0;
+        transition: opacity 0.28s ease;
+    }
+
+    .mode-chip:hover {
+        transform: translateY(-2px);
+        color: #e0f2fe;
+    }
+
+    .mode-chip span,
+    .mode-chip strong {
+        position: relative;
+        z-index: 1;
+    }
+
+    .mode-icon {
+        font-size: 1.05rem;
+    }
+
+    .mode-sub {
+        display: block;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: #7c93ab;
+        margin-top: 0.12rem;
+    }
+
+    .mode-input:checked + .mode-chip {
+        color: white;
+        background: linear-gradient(135deg, rgba(0, 198, 255, 0.22), rgba(0, 114, 255, 0.18));
+        box-shadow: 0 10px 22px rgba(37, 99, 235, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+
+    .mode-input:checked + .mode-chip::before {
+        opacity: 1;
+    }
+
+    .mode-input:checked + .mode-chip::after {
+        opacity: 1;
+    }
+
+    .upload-stage {
+        position: relative;
+        min-height: 238px;
+    }
+
+    .upload-pane {
+        display: none;
+        animation: paneReveal 0.35s ease both;
+    }
+
+    .upload-pane.is-active {
+        display: block;
+    }
+
+    .upload-grid {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .upload-grid.dual {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .upload-dropzone {
+        position: relative;
+        padding: 1.1rem;
+        border-radius: 22px;
+        border: 1px dashed rgba(103, 232, 249, 0.28);
+        background:
+            linear-gradient(180deg, rgba(11, 20, 36, 0.92), rgba(9, 17, 31, 0.95)),
+            radial-gradient(circle at top right, rgba(56, 189, 248, 0.08), transparent 40%);
+        overflow: hidden;
+        transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease, background 0.28s ease;
+    }
+
+    .upload-dropzone::before {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        border-radius: inherit;
+        padding: 1px;
+        background: linear-gradient(135deg, rgba(103, 232, 249, 0.38), rgba(37, 99, 235, 0.12), rgba(103, 232, 249, 0.34));
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0.55;
+        pointer-events: none;
+    }
+
+    .upload-dropzone::after {
+        content: "";
+        position: absolute;
+        inset: -30% auto auto -20%;
+        width: 58%;
+        height: 180%;
+        background: linear-gradient(90deg, transparent, rgba(125, 211, 252, 0.14), transparent);
+        transform: rotate(12deg);
+        opacity: 0;
+        transition: opacity 0.28s ease;
+        pointer-events: none;
+    }
+
+    .upload-dropzone:hover,
+    .upload-dropzone.is-dragover {
+        transform: translateY(-4px);
+        border-color: rgba(103, 232, 249, 0.52);
+        box-shadow: 0 18px 38px rgba(2, 6, 23, 0.26), 0 0 0 1px rgba(103, 232, 249, 0.12);
+        background:
+            linear-gradient(180deg, rgba(13, 23, 41, 0.98), rgba(9, 17, 31, 0.98)),
+            radial-gradient(circle at top right, rgba(56, 189, 248, 0.12), transparent 42%);
+    }
+
+    .upload-dropzone:hover::after,
+    .upload-dropzone.is-dragover::after,
+    .upload-dropzone.is-ready::after {
+        opacity: 1;
+    }
+
+    .upload-dropzone.is-ready {
+        border-color: rgba(74, 222, 128, 0.34);
+        box-shadow: 0 18px 38px rgba(2, 6, 23, 0.26), 0 0 0 1px rgba(74, 222, 128, 0.12);
+    }
+
+    .dropzone-top {
+        display: flex;
+        align-items: center;
+        gap: 0.9rem;
+        margin-bottom: 1rem;
+    }
+
+    .dropzone-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 18px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        font-size: 1.25rem;
+        color: white;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+
+    .dropzone-icon.front {
+        background: linear-gradient(135deg, rgba(14, 165, 233, 0.92), rgba(37, 99, 235, 0.88));
+    }
+
+    .dropzone-icon.rear {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.92), rgba(6, 182, 212, 0.84));
+    }
+
+    .dropzone-copy strong {
+        display: block;
+        font-size: 1rem;
+        color: #f8fafc;
+    }
+
+    .dropzone-copy span {
+        display: block;
+        margin-top: 0.18rem;
+        color: #8ea5bb;
+        font-size: 0.86rem;
+    }
+
+    .dropzone-surface {
+        position: relative;
+        padding: 1.25rem 1rem;
+        border-radius: 18px;
+        background: rgba(15, 23, 42, 0.72);
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        text-align: center;
+        overflow: hidden;
+    }
+
+    .dropzone-surface::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+        background-size: 24px 24px;
+        mask-image: linear-gradient(180deg, rgba(255,255,255,0.9), transparent);
+        pointer-events: none;
+    }
+
+    .dropzone-surface input[type="file"] {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+
+    .dropzone-callout {
+        position: relative;
+        z-index: 1;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.7rem 1rem;
+        border-radius: 999px;
+        background: rgba(56, 189, 248, 0.12);
+        color: #d9f4ff;
+        font-weight: 700;
+        margin-bottom: 0.8rem;
+    }
+
+    .dropzone-note {
+        position: relative;
+        z-index: 1;
+        color: #8ea5bb;
+        margin-bottom: 0;
+        font-size: 0.88rem;
+    }
+
+    .file-preview {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-top: 0.95rem;
+        padding: 0.9rem 1rem;
+        border-radius: 16px;
+        background: rgba(56, 189, 248, 0.08);
+        border: 1px solid rgba(56, 189, 248, 0.14);
+        opacity: 0;
+        transform: translateY(8px);
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.28s ease, transform 0.28s ease, visibility 0.28s ease;
+    }
+
+    .file-preview.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    .file-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        min-width: 0;
+        color: #e0f2fe;
+        font-weight: 700;
+    }
+
+    .file-pill span {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .file-meta {
+        color: #7dd3fc;
+        font-size: 0.8rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .form-label {
+        color: #cbd5e1;
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+    }
+
+    .custom-file {
+        position: relative;
+        border: 1px dashed rgba(148, 163, 184, 0.28);
+        border-radius: 20px;
+        background: rgba(15, 23, 42, 0.72);
+        padding: 1.1rem;
+        transition: border-color 0.25s ease, background 0.25s ease, transform 0.25s ease;
+    }
+
+    .custom-file:hover,
+    .custom-file:focus-within {
+        border-color: rgba(56, 189, 248, 0.45);
+        background: rgba(15, 23, 42, 0.9);
+        transform: translateY(-2px);
+    }
+
+    .custom-file input[type="file"] {
+        background: transparent;
+        border: none;
+        color: var(--text);
+        padding: 0;
+        font-weight: 600;
+    }
+
+    .custom-file input[type="file"]::-webkit-file-upload-button {
+        margin-right: 1rem;
+        border: none;
+        border-radius: 12px;
+        padding: 0.7rem 1rem;
+        background: rgba(56, 189, 248, 0.18);
+        color: #e0f2fe;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .selected-file {
+        display: none;
+        margin-top: 0.9rem;
+        padding: 0.85rem 1rem;
+        border-radius: 14px;
+        background: rgba(56, 189, 248, 0.08);
+        color: #e0f2fe;
+        font-weight: 600;
+    }
+
+    .selected-file.show {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+    }
+
+    .submit-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.7rem;
+        width: 100%;
+        padding: 1rem 1.25rem;
+        border: none;
+        border-radius: 16px;
+        background: linear-gradient(135deg, var(--accent-strong), var(--accent));
+        color: #eff6ff;
+        font-size: 1rem;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 18px 34px rgba(14, 165, 233, 0.24);
+        filter: brightness(1.03);
+    }
+
+    .submit-btn:disabled {
+        opacity: 0.72;
+        cursor: wait;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .submit-shell {
+        position: relative;
+        margin-top: 1.4rem;
+    }
+
+    .ai-btn {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.7rem;
+        width: 100%;
+        overflow: hidden;
+        background: linear-gradient(135deg, #00c6ff, #0072ff);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 14px 28px;
+        color: white;
+        font-size: 16px;
+        font-weight: 800;
+        border-radius: 16px;
+        cursor: pointer;
+        transition: all 0.32s ease;
+        box-shadow: 0 8px 20px rgba(0,0,0,0.3), 0 0 0 1px rgba(103, 232, 249, 0.12), 0 0 26px rgba(0, 114, 255, 0.22);
+    }
+
+    .ai-btn::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(120deg, transparent 15%, rgba(255,255,255,0.32) 48%, transparent 78%);
+        transform: translateX(-130%);
+        animation: buttonShine 2.8s ease-in-out infinite;
+    }
+
+    .ai-btn::after {
+        content: "";
+        position: absolute;
+        inset: auto 16% -30px 16%;
+        height: 40px;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(103, 232, 249, 0.42), transparent 70%);
+        filter: blur(18px);
+        opacity: 0.7;
+    }
+
+    .ai-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4), 0 0 32px rgba(54, 209, 220, 0.26);
+        background: linear-gradient(135deg, #36d1dc, #5b86e5);
+    }
+
+    .ai-btn:active {
+        transform: scale(0.97);
+    }
+
+    .ai-btn .btn-ripple {
+        position: absolute;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        background: rgba(255, 255, 255, 0.35);
+        pointer-events: none;
+        animation: ripple 0.7s ease-out forwards;
+    }
+
+    .ai-btn > * {
+        position: relative;
+        z-index: 1;
+    }
+
+    .upload-feature {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .upload-feature:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .feature-icon {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: rgba(56, 189, 248, 0.14);
+        color: #7dd3fc;
+        flex: 0 0 auto;
+    }
+
+    .feature-title {
+        font-weight: 700;
+        margin-bottom: 0.2rem;
+    }
+
+    .feature-copy {
+        color: var(--muted);
+        margin-bottom: 0;
+    }
+
+    #loadingOverlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1.5rem;
+        background:
+            radial-gradient(circle at 50% 20%, rgba(56, 189, 248, 0.16), transparent 26%),
+            linear-gradient(180deg, rgba(2, 6, 23, 0.58), rgba(2, 6, 23, 0.78));
+        backdrop-filter: blur(18px) saturate(120%);
+        z-index: 9999;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.4s ease, visibility 0.4s ease;
+    }
+
+    #loadingOverlay.show {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: all;
+    }
+
+    .loader-box {
+        position: relative;
+        width: min(100%, 460px);
+        text-align: center;
+        padding: 2.2rem;
+        border-radius: 32px;
+        background: linear-gradient(180deg, rgba(15, 23, 42, 0.82), rgba(10, 18, 33, 0.88));
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        box-shadow: 0 28px 60px rgba(2, 6, 23, 0.45), inset 0 1px 0 rgba(255,255,255,0.04);
+        animation: loaderReveal 0.45s ease both;
+        overflow: hidden;
+    }
+
+    .loader-grid {
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+        background-size: 28px 28px;
+        mask-image: linear-gradient(180deg, rgba(255,255,255,0.7), transparent 78%);
+        opacity: 0.32;
+        pointer-events: none;
+    }
+
+    .loader-box::before {
+        content: "";
+        position: absolute;
+        inset: -80px auto auto -60px;
+        width: 180px;
+        height: 180px;
+        border-radius: 50%;
+        background: rgba(56, 189, 248, 0.12);
+        filter: blur(12px);
+        pointer-events: none;
+    }
+
+    .processing-spinner {
+        position: relative;
+        width: 110px;
+        height: 110px;
+        margin: 0 auto 1.35rem;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+    }
+
+    .processing-spinner::before,
+    .processing-spinner::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        border: 1px solid rgba(103, 232, 249, 0.18);
+    }
+
+    .processing-spinner::before {
+        animation: pulseRing 2.2s ease-out infinite;
+    }
+
+    .processing-spinner::after {
+        inset: 12px;
+        border: 6px solid rgba(148, 163, 184, 0.12);
+        border-top-color: #67e8f9;
+        border-right-color: rgba(0, 198, 255, 0.82);
+        animation: spin 1.1s linear infinite;
+    }
+
+    .processing-spinner .orbit {
+        position: absolute;
+        inset: 8px;
+        border-radius: 50%;
+        animation: spinReverse 2.4s linear infinite;
+    }
+
+    .processing-spinner .orbit::before,
+    .processing-spinner .orbit::after {
+        content: "";
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #67e8f9;
+        box-shadow: 0 0 16px rgba(103, 232, 249, 0.65);
+    }
+
+    .processing-spinner .orbit::before {
+        top: -3px;
+        left: calc(50% - 5px);
+    }
+
+    .processing-spinner .orbit::after {
+        bottom: -2px;
+        right: 18px;
+        background: #38bdf8;
+    }
+
+    .loader-core {
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        background: radial-gradient(circle, #67e8f9, #0ea5e9 62%, rgba(14, 165, 233, 0.1));
+        box-shadow: 0 0 20px rgba(103, 232, 249, 0.52);
+        animation: corePulse 1.8s ease-in-out infinite;
+    }
+
+    .loader-title {
+        font-size: 1.6rem;
+        font-weight: 800;
+        margin-bottom: 0.65rem;
+    }
+
+    .loader-copy {
+        color: var(--muted);
+        margin-bottom: 1rem;
+    }
+
+    .loader-status {
+        color: #dbeafe;
+        font-weight: 700;
+        margin-bottom: 0.55rem;
+    }
+
+    .loader-progress {
+        width: 100%;
+        height: 10px;
+        overflow: hidden;
+        border-radius: 999px;
+        background: rgba(148, 163, 184, 0.14);
+        margin-bottom: 0.9rem;
+        border: 1px solid rgba(148, 163, 184, 0.08);
+    }
+
+    .loader-progress-bar {
+        width: 38%;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #0ea5e9, #38bdf8, #67e8f9);
+        box-shadow: 0 0 24px rgba(56, 189, 248, 0.24);
+        animation: indeterminateLoader 1.25s ease-in-out infinite;
+    }
+
+    .loader-pulse {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        color: #bae6fd;
+        font-weight: 700;
+    }
+
+    .loader-pulse span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #38bdf8;
+        animation: pulse 1.2s infinite ease-in-out;
+    }
+
+    .loader-pulse span:nth-child(2) {
+        animation-delay: 0.15s;
+    }
+
+    .loader-pulse span:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes spinReverse {
+        to {
+            transform: rotate(-360deg);
+        }
+    }
+
+    @keyframes corePulse {
+        0%, 100% {
+            transform: scale(0.92);
+            opacity: 0.82;
+        }
+        50% {
+            transform: scale(1.08);
+            opacity: 1;
+        }
+    }
+
+    @keyframes pulseRing {
+        0% {
+            transform: scale(0.72);
+            opacity: 0;
+        }
+        35% {
+            opacity: 0.65;
+        }
+        100% {
+            transform: scale(1.2);
+            opacity: 0;
+        }
+    }
+
+    @keyframes loaderReveal {
+        from {
+            opacity: 0;
+            transform: translateY(10px) scale(0.97);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes indeterminateLoader {
+        0% {
+            transform: translateX(-120%);
+        }
+        55% {
+            transform: translateX(110%);
+        }
+        100% {
+            transform: translateX(220%);
+        }
+    }
+
+    @keyframes pulse {
+        0%, 80%, 100% {
+            transform: scale(0.6);
+            opacity: 0.45;
+        }
+        40% {
+            transform: scale(1);
+            opacity: 1;
+        }
+    }
+
+    @keyframes paneReveal {
+        from {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes pageReveal {
+        from {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes buttonShine {
+        0%, 100% {
+            transform: translateX(-135%);
+        }
+        45%, 55% {
+            transform: translateX(135%);
+        }
+    }
+
+    @keyframes ripple {
+        to {
+            opacity: 0;
+            transform: translate(-50%, -50%) scale(16);
+        }
+    }
+
+    @keyframes ambientFloatOne {
+        0%, 100% {
+            transform: translate3d(0, 0, 0);
+        }
+        50% {
+            transform: translate3d(18px, -16px, 0);
+        }
+    }
+
+    @keyframes ambientFloatTwo {
+        0%, 100% {
+            transform: translate3d(0, 0, 0);
+        }
+        50% {
+            transform: translate3d(-16px, 14px, 0);
+        }
+    }
+
+    @media (max-width: 991.98px) {
+        .upload-shell {
+            padding: 1.5rem;
+            border-radius: 24px;
+        }
+
+        .upload-grid.dual {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div id="loadingOverlay" aria-hidden="true">
+    <div class="loader-box" role="status" aria-live="polite">
+        <div class="loader-grid" aria-hidden="true"></div>
+        <div class="processing-spinner">
+            <div class="orbit"></div>
+            <div class="loader-core"></div>
+        </div>
+        <div class="loader-title">Processing Video with AI...</div>
+        <p class="loader-status" id="loaderStatusText">Analyzing vehicles, helmets, and violations</p>
+        <div class="loader-progress" aria-hidden="true">
+            <div class="loader-progress-bar"></div>
+        </div>
+        <p class="loader-copy">Building synchronized evidence, preparing the processed video, and generating your dashboard.</p>
+        <div class="loader-pulse" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+</div>
+
+<div class="upload-dashboard">
+    <section class="upload-shell">
+        <span class="upload-badge">
+            <i class="bi bi-cloud-arrow-up"></i>
+            Video Upload
+        </span>
+        <h1 class="upload-title">Upload Traffic Video for AI Analysis</h1>
+        <p class="upload-copy">
+            Submit a traffic video and the system will process it, detect helmet violations, and return a
+            processed video with evidence-ready results.
+        </p>
+
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="upload-card">
+                    <div class="section-title">Start Analysis</div>
+                    <p class="section-copy">Choose a video file and begin processing. The app will show a loading state until results are ready.</p>
+                    <h3 id="mode-label" class="mode-indicator">Mode: Single Camera</h3>
+
+                    <form id="uploadForm" method="POST" enctype="multipart/form-data">
+                        <div class="segmented-mode" role="radiogroup" aria-label="Camera mode">
+                            <div>
+                                <input class="mode-input" id="mode-single" type="radio" name="mode" value="single" checked onclick="toggleMode()">
+                                <label class="mode-chip" for="mode-single">
+                                    <span class="mode-icon">🎥</span>
+                                    <span>
+                                        <strong>Single Camera</strong>
+                                        <span class="mode-sub">One feed for analysis</span>
+                                    </span>
+                                </label>
+                            </div>
+                            <div>
+                                <input class="mode-input" id="mode-dual" type="radio" name="mode" value="dual" onclick="toggleMode()">
+                                <label class="mode-chip" for="mode-dual">
+                                    <span class="mode-icon">🎥🎥</span>
+                                    <span>
+                                        <strong>Dual Camera</strong>
+                                        <span class="mode-sub">Front + rear evidence</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="upload-stage">
+                            <div id="single-upload" class="upload-pane is-active">
+                                <div class="upload-grid">
+                                    <div class="upload-dropzone" data-dropzone>
+                                        <div class="dropzone-top">
+                                            <div class="dropzone-icon front"><i class="bi bi-camera-video"></i></div>
+                                            <div class="dropzone-copy">
+                                                <strong>Single Camera Input</strong>
+                                                <span>Upload one traffic feed for full AI review</span>
+                                            </div>
+                                        </div>
+                                        <div class="dropzone-surface">
+                                            <div class="dropzone-callout"><i class="bi bi-cloud-arrow-up"></i> Drag & drop or browse</div>
+                                            <p class="dropzone-note">Supports MP4, MOV, and common browser-friendly video formats.</p>
+                                            <input type="file" name="video_single" accept="video/*" data-file-input data-target="single-preview" required>
+                                        </div>
+                                        <div id="single-preview" class="file-preview">
+                                            <div class="file-pill"><i class="bi bi-film"></i><span>No file selected</span></div>
+                                            <div class="file-meta">Awaiting upload</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="dual-upload" class="upload-pane">
+                                <div class="upload-grid dual">
+                                    <div class="upload-dropzone" data-dropzone>
+                                        <div class="dropzone-top">
+                                            <div class="dropzone-icon front"><i class="bi bi-camera-video-fill"></i></div>
+                                            <div class="dropzone-copy">
+                                                <strong>Front Camera</strong>
+                                                <span>Helmet detection and rider tracking</span>
+                                            </div>
+                                        </div>
+                                        <div class="dropzone-surface">
+                                            <div class="dropzone-callout"><i class="bi bi-cloud-arrow-up"></i> Upload front feed</div>
+                                            <p class="dropzone-note">Use the front-facing camera stream for helmet and rider analysis.</p>
+                                            <input type="file" name="video_front" accept="video/*" data-file-input data-target="front-preview">
+                                        </div>
+                                        <div id="front-preview" class="file-preview">
+                                            <div class="file-pill"><i class="bi bi-badge-hd"></i><span>No file selected</span></div>
+                                            <div class="file-meta">Front stream</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="upload-dropzone" data-dropzone>
+                                        <div class="dropzone-top">
+                                            <div class="dropzone-icon rear"><i class="bi bi-camera-reels"></i></div>
+                                            <div class="dropzone-copy">
+                                                <strong>Rear Camera</strong>
+                                                <span>Plate capture and OCR evidence</span>
+                                            </div>
+                                        </div>
+                                        <div class="dropzone-surface">
+                                            <div class="dropzone-callout"><i class="bi bi-cloud-arrow-up"></i> Upload rear feed</div>
+                                            <p class="dropzone-note">Use the rear or roadside feed for plate extraction and OCR matching.</p>
+                                            <input type="file" name="video_back" accept="video/*" data-file-input data-target="back-preview">
+                                        </div>
+                                        <div id="back-preview" class="file-preview">
+                                            <div class="file-pill"><i class="bi bi-postcard"></i><span>No file selected</span></div>
+                                            <div class="file-meta">Rear stream</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="submit-shell">
+                            <button class="ai-btn" id="submitBtn" type="submit">
+                                <i class="bi bi-stars"></i>
+                                <span>Start AI Analysis</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="upload-info">
+                    <div class="section-title">What Happens Next</div>
+                    <p class="section-copy">Your current backend flow stays the same. These updates only improve the experience around it.</p>
+
+                    <div class="upload-feature">
+                        <div class="feature-icon">
+                            <i class="bi bi-hourglass-split"></i>
+                        </div>
+                        <div>
+                            <div class="feature-title">Visible processing state</div>
+                            <p class="feature-copy">A full-screen spinner keeps the interface clear while the server processes the upload.</p>
+                        </div>
+                    </div>
+
+                    <div class="upload-feature">
+                        <div class="feature-icon">
+                            <i class="bi bi-play-btn"></i>
+                        </div>
+                        <div>
+                            <div class="feature-title">Automatic result handoff</div>
+                            <p class="feature-copy">When processing finishes, the app opens the results page with the processed video ready to display.</p>
+                        </div>
+                    </div>
+
+                    <div class="upload-feature">
+                        <div class="feature-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <div>
+                            <div class="feature-title">No backend behavior changes</div>
+                            <p class="feature-copy">The upload route and ML processing flow remain intact, reducing regression risk.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+const uploadForm = document.getElementById('uploadForm');
+const loadingOverlay = document.getElementById('loadingOverlay');
+const loaderStatusText = document.getElementById('loaderStatusText');
+const submitBtn = document.getElementById('submitBtn');
+const modeLabel = document.getElementById('mode-label');
+
+function toggleMode() {
+    const mode = document.querySelector('input[name="mode"]:checked').value;
+    if (modeLabel) {
+        modeLabel.innerText = "Mode: " + (mode === "dual" ? "Dual Camera" : "Single Camera");
+    }
+
+    if (mode === "dual") {
+        document.getElementById("single-upload").classList.remove("is-active");
+        document.getElementById("dual-upload").classList.add("is-active");
+        const singleInput = document.querySelector('input[name="video_single"]');
+        const frontInput = document.querySelector('input[name="video_front"]');
+        const backInput = document.querySelector('input[name="video_back"]');
+        if (singleInput) singleInput.required = false;
+        if (frontInput) frontInput.required = true;
+        if (backInput) backInput.required = true;
+    } else {
+        document.getElementById("single-upload").classList.add("is-active");
+        document.getElementById("dual-upload").classList.remove("is-active");
+        const singleInput = document.querySelector('input[name="video_single"]');
+        const frontInput = document.querySelector('input[name="video_front"]');
+        const backInput = document.querySelector('input[name="video_back"]');
+        if (singleInput) singleInput.required = true;
+        if (frontInput) frontInput.required = false;
+        if (backInput) backInput.required = false;
+    }
+}
+
+document.querySelectorAll('[data-file-input]').forEach((input) => {
+    const preview = document.getElementById(input.dataset.target);
+    const nameNode = preview ? preview.querySelector('.file-pill span') : null;
+    const metaNode = preview ? preview.querySelector('.file-meta') : null;
+    const dropzone = input.closest('[data-dropzone]');
+
+    const updatePreview = (file) => {
+        if (!preview || !nameNode || !metaNode) {
+            return;
+        }
+
+        if (file) {
+            nameNode.textContent = file.name;
+            metaNode.textContent = `${Math.max(1, Math.round(file.size / 1024 / 1024 * 10) / 10)} MB`;
+            preview.classList.add('is-visible');
+            if (dropzone) {
+                dropzone.classList.add('is-ready');
+            }
+        } else {
+            nameNode.textContent = 'No file selected';
+            metaNode.textContent = 'Awaiting upload';
+            preview.classList.remove('is-visible');
+            if (dropzone) {
+                dropzone.classList.remove('is-ready');
+            }
+        }
+    };
+
+    input.addEventListener('change', () => {
+        updatePreview(input.files && input.files[0]);
+    });
+
+    if (dropzone) {
+        ['dragenter', 'dragover'].forEach((eventName) => {
+            dropzone.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                dropzone.classList.add('is-dragover');
+            });
+        });
+
+        ['dragleave', 'drop'].forEach((eventName) => {
+            dropzone.addEventListener(eventName, (event) => {
+                event.preventDefault();
+                dropzone.classList.remove('is-dragover');
+            });
+        });
+
+        dropzone.addEventListener('drop', (event) => {
+            const files = event.dataTransfer && event.dataTransfer.files;
+            if (!files || !files.length) {
+                return;
+            }
+            input.files = files;
+            updatePreview(files[0]);
+        });
+    }
+});
+
+if (uploadForm) {
+    uploadForm.addEventListener('submit', () => {
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="bi bi-cpu"></i><span>Launching AI Pipeline...</span>';
+        }
+        if (loaderStatusText) {
+            loaderStatusText.textContent = 'Analyzing vehicles, helmets, and violations';
+        }
+        if (loadingOverlay) {
+            loadingOverlay.classList.add('show');
+            loadingOverlay.setAttribute('aria-hidden', 'false');
+        }
+        document.body.classList.add('is-processing');
+    });
+}
+
+if (submitBtn) {
+    submitBtn.addEventListener('pointerdown', (event) => {
+        const ripple = document.createElement('span');
+        const rect = submitBtn.getBoundingClientRect();
+        ripple.className = 'btn-ripple';
+        ripple.style.left = `${event.clientX - rect.left}px`;
+        ripple.style.top = `${event.clientY - rect.top}px`;
+        submitBtn.appendChild(ripple);
+        ripple.addEventListener('animationend', () => ripple.remove(), { once: true });
+    });
+}
+
+window.addEventListener('pageshow', () => {
+    document.body.classList.remove('is-processing');
+    if (loadingOverlay) {
+        loadingOverlay.classList.remove('show');
+        loadingOverlay.setAttribute('aria-hidden', 'true');
+    }
+});
+
+toggleMode();
+</script>
+{% endblock %}

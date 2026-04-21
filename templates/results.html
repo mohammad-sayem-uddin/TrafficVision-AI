@@ -1,0 +1,2358 @@
+{% extends "base.html" %}
+{% block title %}Analysis Results | Traffic Violation AI{% endblock %}
+
+{% block content %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+    .results-dashboard {
+        --bg: #09111f;
+        --bg-soft: rgba(15, 23, 42, 0.8);
+        --panel: rgba(255, 255, 255, 0.055);
+        --panel-strong: rgba(255, 255, 255, 0.075);
+        --border: rgba(148, 163, 184, 0.14);
+        --divider: rgba(148, 163, 184, 0.12);
+        --text: #f8fafc;
+        --muted: #94a3b8;
+        --muted-strong: #cbd5e1;
+        --accent: #60a5fa;
+        --accent-soft: rgba(96, 165, 250, 0.12);
+        --danger: #fb7185;
+        --success: #4ade80;
+        position: relative;
+        overflow: hidden;
+        font-family: "Manrope", sans-serif;
+        color: var(--text);
+    }
+
+    .results-dashboard::before,
+    .results-dashboard::after {
+        content: "";
+        position: absolute;
+        inset: auto;
+        pointer-events: none;
+        z-index: 0;
+        opacity: 0.55;
+        filter: blur(12px);
+        will-change: transform;
+    }
+
+    .results-dashboard::before {
+        top: 3%;
+        left: -8%;
+        width: 340px;
+        height: 340px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(56, 189, 248, 0.12), transparent 68%);
+        animation: ambientFloatOne 18s ease-in-out infinite;
+    }
+
+    .results-dashboard::after {
+        right: -6%;
+        bottom: 8%;
+        width: 300px;
+        height: 300px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(74, 222, 128, 0.08), transparent 70%);
+        animation: ambientFloatTwo 22s ease-in-out infinite;
+    }
+
+    .results-shell {
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+        padding: 2rem;
+        border-radius: 28px;
+        background:
+            radial-gradient(circle at top left, rgba(96, 165, 250, 0.12), transparent 26%),
+            radial-gradient(circle at top right, rgba(148, 163, 184, 0.08), transparent 24%),
+            linear-gradient(180deg, rgba(8, 15, 29, 0.98), rgba(9, 15, 27, 0.97));
+        border: 1px solid var(--border);
+        box-shadow: 0 28px 60px rgba(2, 6, 23, 0.4);
+        animation: shellReveal 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .results-shell::before,
+    .results-shell::after {
+        content: "";
+        position: absolute;
+        border-radius: 999px;
+        filter: blur(18px);
+        opacity: 0.65;
+        pointer-events: none;
+    }
+
+    .results-shell::before {
+        inset: auto auto -80px -50px;
+        width: 220px;
+        height: 220px;
+        background: rgba(56, 189, 248, 0.12);
+    }
+
+    .results-shell::after {
+        inset: -70px -30px auto auto;
+        width: 180px;
+        height: 180px;
+        background: rgba(74, 222, 128, 0.08);
+    }
+
+    .dashboard-section {
+        position: relative;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+    }
+
+    .dashboard-section + .dashboard-section {
+        border-top: 1px solid var(--divider);
+    }
+
+    .hero-badge,
+    .section-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.42rem 0.82rem;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        border: 1px solid rgba(96, 165, 250, 0.2);
+        color: #bfdbfe;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+    }
+
+    .dashboard-eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--muted);
+        font-size: 0.82rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 0.9rem;
+    }
+
+    .dashboard-eyebrow::before {
+        content: "";
+        width: 24px;
+        height: 1px;
+        background: rgba(96, 165, 250, 0.55);
+    }
+
+    .dashboard-title {
+        font-family: "Space Grotesk", "Manrope", sans-serif;
+        font-size: clamp(2.25rem, 4vw, 3.5rem);
+        line-height: 1;
+        font-weight: 700;
+        letter-spacing: -0.05em;
+        margin-top: 0.4rem;
+        margin-bottom: 1rem;
+    }
+
+    .dashboard-subtitle {
+        max-width: 760px;
+        color: var(--muted);
+        font-size: 1rem;
+        line-height: 1.75;
+        margin-bottom: 0;
+    }
+
+    .dashboard-header-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.8rem;
+        margin-top: 1.4rem;
+    }
+
+    .header-meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.58rem 0.92rem;
+        border-radius: 999px;
+        border: 1px solid var(--divider);
+        background: rgba(15, 23, 42, 0.66);
+        color: var(--muted-strong);
+        font-size: 0.88rem;
+        font-weight: 600;
+    }
+
+    .alert-banner {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem 1.1rem;
+        border-radius: 18px;
+        border: 1px solid rgba(251, 191, 36, 0.22);
+        background: linear-gradient(180deg, rgba(120, 53, 15, 0.18), rgba(68, 30, 9, 0.1));
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .alert-banner.critical {
+        border-color: rgba(251, 113, 133, 0.28);
+        background: linear-gradient(180deg, rgba(127, 29, 29, 0.2), rgba(69, 10, 10, 0.12));
+    }
+
+    .alert-body {
+        display: flex;
+        gap: 0.9rem;
+        align-items: flex-start;
+    }
+
+    .alert-icon {
+        width: 42px;
+        height: 42px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 14px;
+        background: rgba(251, 191, 36, 0.14);
+        color: #fcd34d;
+        flex: 0 0 auto;
+    }
+
+    .alert-banner.critical .alert-icon {
+        background: rgba(251, 113, 133, 0.14);
+        color: #fda4af;
+    }
+
+    .alert-title {
+        font-family: "Space Grotesk", "Manrope", sans-serif;
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-bottom: 0.2rem;
+    }
+
+    .alert-copy {
+        color: var(--muted-strong);
+        margin-bottom: 0;
+        font-size: 0.94rem;
+    }
+
+    .alert-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.7rem;
+    }
+
+    .mini-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.62rem 0.9rem;
+        border-radius: 999px;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: rgba(15, 23, 42, 0.68);
+        color: var(--muted-strong);
+        font-size: 0.85rem;
+        font-weight: 700;
+    }
+
+    .mini-btn:hover {
+        color: var(--text);
+        background: rgba(30, 41, 59, 0.88);
+    }
+
+    .stat-card,
+    .dashboard-panel {
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.035));
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.035),
+            0 18px 32px rgba(2, 6, 23, 0.18);
+    }
+
+    .stat-card {
+        position: relative;
+        overflow: hidden;
+        padding: 1.5rem;
+        height: 100%;
+        transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        animation: fadeUp 0.7s ease both;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(96, 165, 250, 0.24);
+        box-shadow: 0 22px 36px rgba(2, 6, 23, 0.22);
+    }
+
+    .stat-card::after {
+        content: "";
+        position: absolute;
+        inset: auto -50px -60px auto;
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .stat-icon {
+        width: 52px;
+        height: 52px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 16px;
+        margin-bottom: 1.1rem;
+        font-size: 1.2rem;
+        background: rgba(148, 163, 184, 0.12);
+        color: var(--text);
+    }
+
+    .stat-icon.accent {
+        background: rgba(56, 189, 248, 0.16);
+        color: #7dd3fc;
+    }
+
+    .stat-icon.danger {
+        background: rgba(251, 113, 133, 0.14);
+        color: #fda4af;
+    }
+
+    .stat-icon.success {
+        background: rgba(74, 222, 128, 0.14);
+        color: #86efac;
+    }
+
+    .stat-label {
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        font-weight: 700;
+        font-size: 0.72rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .stat-number {
+        position: relative;
+        display: inline-block;
+        font-family: "Space Grotesk", "Manrope", sans-serif;
+        font-size: clamp(2rem, 3vw, 2.9rem);
+        font-weight: 800;
+        line-height: 1;
+        letter-spacing: -0.04em;
+        margin-bottom: 0.5rem;
+        text-shadow: none;
+        transform-origin: center;
+        will-change: transform, opacity, filter;
+    }
+
+    .stat-number::after {
+        content: "";
+        position: absolute;
+        left: 8%;
+        right: 8%;
+        bottom: -0.35rem;
+        height: 0.5rem;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(56, 189, 248, 0.32), transparent 72%);
+        opacity: 0;
+        transform: scaleX(0.7);
+        transition: opacity 0.35s ease, transform 0.35s ease;
+        pointer-events: none;
+    }
+
+    .stat-number.is-counting {
+        animation: counterPop 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+        filter: brightness(1.06);
+    }
+
+    .stat-number.is-counting::after,
+    .stat-number.is-complete::after {
+        opacity: 1;
+        transform: scaleX(1);
+    }
+
+    .stat-number.is-complete {
+        filter: brightness(1);
+    }
+
+    .stat-note {
+        color: var(--muted);
+        font-size: 0.95rem;
+        margin-bottom: 0;
+    }
+
+    .dashboard-panel {
+        padding: 1.4rem 1.4rem 1.35rem;
+        animation: fadeUp 0.9s ease both;
+        transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+    }
+
+    .dashboard-panel:hover {
+        transform: translateY(-4px);
+        border-color: rgba(96, 165, 250, 0.18);
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.04),
+            0 22px 36px rgba(2, 6, 23, 0.24);
+    }
+
+    .panel-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        margin-bottom: 1.1rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--divider);
+    }
+
+    .panel-title {
+        font-family: "Space Grotesk", "Manrope", sans-serif;
+        font-size: 1.08rem;
+        font-weight: 700;
+        margin-bottom: 0.25rem;
+        letter-spacing: -0.02em;
+    }
+
+    .panel-copy {
+        color: var(--muted);
+        font-size: 0.94rem;
+        margin-bottom: 0;
+    }
+
+    .video-frame {
+        position: relative;
+        border-radius: 22px;
+        overflow: hidden;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        background: #020617;
+        min-height: 320px;
+        box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.03),
+            0 0 0 1px rgba(56, 189, 248, 0.08),
+            0 18px 36px rgba(2, 6, 23, 0.18);
+    }
+
+    .video-frame::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+            linear-gradient(110deg, transparent 15%, rgba(148, 163, 184, 0.12) 32%, rgba(255, 255, 255, 0.2) 45%, rgba(148, 163, 184, 0.12) 58%, transparent 75%),
+            linear-gradient(180deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.78));
+        background-size: 200% 100%, 100% 100%;
+        animation: videoShimmer 2s linear infinite;
+        opacity: 1;
+        transition: opacity 0.32s ease;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .video-frame::after {
+        content: "";
+        position: absolute;
+        inset: auto 10% -26px 10%;
+        height: 48px;
+        border-radius: 999px;
+        background: radial-gradient(circle, rgba(56, 189, 248, 0.32), transparent 70%);
+        filter: blur(22px);
+        opacity: 0.72;
+        pointer-events: none;
+    }
+
+    .video-frame.is-ready::before,
+    .video-frame.has-error::before {
+        opacity: 0;
+    }
+
+    .video-frame video {
+        display: block;
+        width: 100%;
+        max-height: 540px;
+        aspect-ratio: 16 / 9;
+        object-fit: contain;
+        background: #020617;
+        opacity: 0.84;
+        transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .video-frame.is-ready video {
+        opacity: 1;
+    }
+
+    .video-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        margin-top: 1.05rem;
+    }
+
+    .video-meta-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.45rem;
+        padding: 0.55rem 0.9rem;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.85);
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        color: #cbd5e1;
+        font-size: 0.88rem;
+        font-weight: 600;
+    }
+
+    .chart-wrap {
+        position: relative;
+        min-height: 330px;
+    }
+
+    .chart-wrap.chart-lg {
+        min-height: 360px;
+    }
+
+    .chart-wrap.chart-xl {
+        min-height: 390px;
+    }
+
+    .filter-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .filter-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .slider-shell {
+        padding: 0.95rem 1rem;
+        border-radius: 16px;
+        border: 1px solid var(--divider);
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .slider-label {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        color: var(--muted-strong);
+        font-size: 0.9rem;
+        font-weight: 700;
+        margin-bottom: 0.7rem;
+    }
+
+    .threshold-slider {
+        width: 100%;
+        accent-color: #60a5fa;
+    }
+
+    .filter-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.8rem;
+    }
+
+    .filter-metric {
+        padding: 0.9rem;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid var(--divider);
+    }
+
+    .filter-metric-label {
+        color: var(--muted);
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.45rem;
+    }
+
+    .filter-metric-value {
+        font-family: "Space Grotesk", "Manrope", sans-serif;
+        font-size: 1.3rem;
+        color: var(--text);
+        font-weight: 700;
+    }
+
+    .detection-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        max-height: 420px;
+        overflow: auto;
+        padding-right: 0.15rem;
+    }
+
+    .detection-list::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .detection-list::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.18);
+        border-radius: 999px;
+    }
+
+    .detection-card {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        gap: 0.8rem;
+        align-items: center;
+        padding: 0.85rem 0.95rem;
+        border-radius: 16px;
+        border: 1px solid var(--divider);
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .detection-title {
+        font-weight: 700;
+        color: var(--muted-strong);
+        margin-bottom: 0.18rem;
+    }
+
+    .detection-meta {
+        color: var(--muted);
+        font-size: 0.86rem;
+        margin-bottom: 0;
+    }
+
+    .confidence-chip {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 88px;
+        padding: 0.46rem 0.72rem;
+        border-radius: 999px;
+        font-size: 0.82rem;
+        font-weight: 800;
+    }
+
+    .confidence-chip.high {
+        background: rgba(74, 222, 128, 0.14);
+        color: #86efac;
+        border: 1px solid rgba(74, 222, 128, 0.2);
+    }
+
+    .confidence-chip.medium {
+        background: rgba(251, 191, 36, 0.14);
+        color: #fcd34d;
+        border: 1px solid rgba(251, 191, 36, 0.2);
+    }
+
+    .confidence-chip.low {
+        background: rgba(251, 113, 133, 0.14);
+        color: #fda4af;
+        border: 1px solid rgba(251, 113, 133, 0.2);
+    }
+
+    .timeline-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+        max-height: 520px;
+        overflow: auto;
+        padding-right: 0.2rem;
+    }
+
+    .timeline-panel::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .timeline-panel::-webkit-scrollbar-thumb {
+        background: rgba(148, 163, 184, 0.18);
+        border-radius: 999px;
+    }
+
+    .timeline-item {
+        display: grid;
+        grid-template-columns: 84px 1fr auto;
+        gap: 0.9rem;
+        align-items: center;
+        width: 100%;
+        padding: 0.8rem;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        background: rgba(255, 255, 255, 0.03);
+        color: inherit;
+        text-align: left;
+        transition: transform 0.22s ease, border-color 0.22s ease, background 0.22s ease, box-shadow 0.22s ease;
+    }
+
+    .timeline-item:hover {
+        transform: translateY(-2px);
+        border-color: rgba(96, 165, 250, 0.25);
+        background: rgba(96, 165, 250, 0.06);
+        box-shadow: 0 16px 26px rgba(2, 6, 23, 0.18);
+    }
+
+    .timeline-item.active {
+        border-color: rgba(96, 165, 250, 0.32);
+        background: rgba(96, 165, 250, 0.08);
+        box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.16);
+    }
+
+    .timeline-thumb {
+        width: 84px;
+        height: 62px;
+        object-fit: cover;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        background: #020617;
+    }
+
+    .timeline-thumb.placeholder {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #7dd3fc;
+        font-size: 1.1rem;
+        background: linear-gradient(180deg, rgba(30, 41, 59, 0.92), rgba(15, 23, 42, 0.96));
+    }
+
+    .timeline-title {
+        color: var(--muted-strong);
+        font-weight: 700;
+        margin-bottom: 0.18rem;
+    }
+
+    .timeline-copy {
+        color: var(--muted);
+        font-size: 0.88rem;
+        margin-bottom: 0;
+    }
+
+    .timeline-time {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.48rem 0.72rem;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.76);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        color: #bfdbfe;
+        font-size: 0.82rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+
+    .chart-legend-note {
+        color: #94a3b8;
+        font-size: 0.88rem;
+        margin-top: 0.9rem;
+        margin-bottom: 0;
+    }
+
+    .comparison-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 1rem;
+    }
+
+    .comparison-card {
+        padding: 1rem;
+        border-radius: 18px;
+        border: 1px solid var(--divider);
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .comparison-card.current {
+        border-color: rgba(96, 165, 250, 0.2);
+    }
+
+    .comparison-kicker {
+        color: var(--muted);
+        font-size: 0.74rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.4rem;
+    }
+
+    .comparison-title {
+        color: var(--text);
+        font-weight: 700;
+        margin-bottom: 0.85rem;
+    }
+
+    .comparison-stat {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--muted-strong);
+        padding: 0.45rem 0;
+        border-top: 1px solid rgba(148, 163, 184, 0.08);
+    }
+
+    .comparison-diff {
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--divider);
+        color: var(--muted-strong);
+    }
+
+    .diff-positive {
+        color: #fda4af;
+    }
+
+    .diff-negative {
+        color: #86efac;
+    }
+
+    .eval-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.8rem;
+        margin-bottom: 1rem;
+    }
+
+    .eval-card {
+        padding: 0.95rem;
+        border-radius: 16px;
+        border: 1px solid var(--divider);
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .eval-label {
+        color: var(--muted);
+        font-size: 0.74rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-bottom: 0.4rem;
+    }
+
+    .eval-value {
+        font-family: "Space Grotesk", "Manrope", sans-serif;
+        font-size: 1.45rem;
+        font-weight: 700;
+        color: var(--text);
+    }
+
+    .matrix-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.8rem;
+        margin-top: 1rem;
+    }
+
+    .matrix-cell {
+        padding: 1rem;
+        border-radius: 18px;
+        border: 1px solid var(--divider);
+        background: rgba(255, 255, 255, 0.03);
+        text-align: center;
+    }
+
+    .matrix-cell strong {
+        display: block;
+        font-size: 1.2rem;
+        font-family: "Space Grotesk", "Manrope", sans-serif;
+        color: var(--text);
+    }
+
+    .matrix-cell span {
+        display: block;
+        color: var(--muted);
+        margin-top: 0.2rem;
+    }
+
+    .evidence-grid img {
+        width: 100%;
+        height: 210px;
+        object-fit: cover;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        background: #020617;
+        cursor: zoom-in;
+        transition: transform 0.35s ease, filter 0.35s ease;
+    }
+
+    .evidence-item {
+        position: relative;
+        padding: 0.8rem;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(148, 163, 184, 0.12);
+        height: 100%;
+        overflow: hidden;
+        transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        animation: fadeUp 0.75s ease both;
+    }
+
+    .evidence-item::before {
+        content: "";
+        position: absolute;
+        inset: -1px;
+        border-radius: inherit;
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), transparent 42%, rgba(56, 189, 248, 0.12));
+        opacity: 0;
+        transition: opacity 0.28s ease;
+        pointer-events: none;
+    }
+
+    .evidence-item:hover {
+        transform: translateY(-4px);
+        border-color: rgba(56, 189, 248, 0.28);
+        box-shadow: 0 16px 26px rgba(2, 6, 23, 0.18);
+    }
+
+    .evidence-item:hover::before {
+        opacity: 1;
+    }
+
+    .evidence-item:hover img {
+        transform: scale(1.05);
+        filter: saturate(1.06);
+    }
+
+    .image-preview-modal .modal-content {
+        background: rgba(7, 14, 26, 0.96);
+        border: 1px solid rgba(148, 163, 184, 0.16);
+        border-radius: 24px;
+        box-shadow: 0 28px 60px rgba(2, 6, 23, 0.48);
+        transform: scale(0.94);
+        opacity: 0;
+        transition: transform 0.28s ease, opacity 0.28s ease;
+    }
+
+    .image-preview-modal.show .modal-content {
+        transform: scale(1);
+        opacity: 1;
+    }
+
+    .image-preview-modal .modal-header {
+        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+        padding: 1rem 1.25rem 0.8rem;
+    }
+
+    .image-preview-modal .modal-title {
+        color: #f8fafc;
+        font-weight: 700;
+    }
+
+    .image-preview-modal .btn-close {
+        filter: invert(1) grayscale(1);
+        opacity: 0.8;
+    }
+
+    .image-preview-modal .btn-close:hover {
+        opacity: 1;
+    }
+
+    .image-preview-modal .modal-body {
+        padding: 1rem 1.25rem 1.25rem;
+    }
+
+    .image-preview-modal .modal-body img {
+        width: 100%;
+        max-height: 78vh;
+        object-fit: contain;
+        border-radius: 18px;
+        background: #020617;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .image-preview-modal .modal-backdrop,
+    .modal-backdrop.show {
+        background-color: rgba(2, 6, 23, 0.82);
+    }
+
+    .evidence-caption {
+        color: var(--muted-strong);
+        text-align: center;
+        font-weight: 600;
+        margin-top: 0.9rem;
+        margin-bottom: 0.1rem;
+    }
+
+    .evidence-section {
+        margin-top: 30px;
+    }
+
+    .evidence-section .evidence-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 15px;
+    }
+
+    .evidence-card {
+        background: linear-gradient(180deg, rgba(12, 21, 37, 0.92), rgba(8, 15, 28, 0.98));
+        padding: 10px;
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    .evidence-card img {
+        width: 100%;
+        border-radius: 8px;
+    }
+
+    .empty-state {
+        padding: 2rem;
+        text-align: center;
+        border-radius: 20px;
+        background: rgba(7, 15, 29, 0.6);
+        border: 1px dashed rgba(148, 163, 184, 0.24);
+        color: var(--muted);
+    }
+
+    .action-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        margin-top: 0.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--divider);
+    }
+
+    .action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.7rem;
+        padding: 0.95rem 1.35rem;
+        border-radius: 14px;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 28px rgba(2, 6, 23, 0.26);
+    }
+
+    .btn-download {
+        background: linear-gradient(135deg, #0ea5e9, #38bdf8);
+        color: #eff6ff;
+        border: none;
+    }
+
+    .btn-download:hover {
+        color: #eff6ff;
+        background: linear-gradient(135deg, #0284c7, #0ea5e9);
+    }
+
+    .btn-download .btn-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.35rem;
+        height: 1.35rem;
+        transition: transform 0.25s ease;
+    }
+
+    .btn-download:hover .btn-icon {
+        transform: translateY(-1px) scale(1.08);
+    }
+
+    .btn-download.is-loading {
+        pointer-events: none;
+        filter: saturate(0.92);
+    }
+
+    .btn-download.is-loading .btn-icon {
+        animation: spin 0.9s linear infinite;
+    }
+
+    .download-status {
+        width: min(100%, 420px);
+        padding: 1rem 1.1rem;
+        border-radius: 18px;
+        background: rgba(15, 23, 42, 0.92);
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        box-shadow: 0 22px 44px rgba(2, 6, 23, 0.24);
+        opacity: 0;
+        transform: translateY(8px);
+        pointer-events: none;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+    }
+
+    .download-status.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .download-status-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        margin-bottom: 0.7rem;
+    }
+
+    .download-status-title {
+        font-weight: 700;
+        color: #f8fafc;
+    }
+
+    .download-status-meta {
+        color: #94a3b8;
+        font-size: 0.88rem;
+        margin-bottom: 0;
+    }
+
+    .download-progress {
+        height: 8px;
+        border-radius: 999px;
+        overflow: hidden;
+        background: rgba(148, 163, 184, 0.14);
+    }
+
+    .download-progress-bar {
+        width: 0;
+        height: 100%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, #0ea5e9, #38bdf8);
+        transition: width 0.2s ease;
+    }
+
+    .download-progress-bar.is-indeterminate {
+        width: 38%;
+        animation: indeterminateSlide 1.15s ease-in-out infinite;
+    }
+
+    .download-toast {
+        background: rgba(9, 16, 30, 0.96);
+        color: #e2e8f0;
+        border: 1px solid rgba(148, 163, 184, 0.14);
+        border-radius: 18px;
+        box-shadow: 0 24px 48px rgba(2, 6, 23, 0.36);
+    }
+
+    .download-toast .toast-header {
+        background: transparent;
+        color: #f8fafc;
+        border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    }
+
+    .download-toast .btn-close {
+        filter: invert(1) grayscale(1);
+    }
+
+    .btn-secondary-dark {
+        background: rgba(15, 23, 42, 0.92);
+        color: var(--text);
+        border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .btn-secondary-dark:hover {
+        color: #f8fafc;
+        background: rgba(30, 41, 59, 0.96);
+        border-color: rgba(148, 163, 184, 0.32);
+    }
+
+    @keyframes fadeUp {
+        from {
+            opacity: 0;
+            transform: translateY(18px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    @keyframes shimmer {
+        0% {
+            background-position: 200% 0;
+        }
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    @keyframes indeterminateSlide {
+        0% {
+            transform: translateX(-120%);
+        }
+        50% {
+            transform: translateX(95%);
+        }
+        100% {
+            transform: translateX(240%);
+        }
+    }
+
+    @keyframes ambientFloatOne {
+        0%, 100% {
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+        50% {
+            transform: translate3d(42px, 28px, 0) scale(1.08);
+        }
+    }
+
+    @keyframes ambientFloatTwo {
+        0%, 100% {
+            transform: translate3d(0, 0, 0) scale(1);
+        }
+        50% {
+            transform: translate3d(-36px, -24px, 0) scale(1.06);
+        }
+    }
+
+    @keyframes shellReveal {
+        from {
+            opacity: 0;
+            transform: translateY(12px) scale(0.985);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes counterPop {
+        0% {
+            opacity: 0.35;
+            transform: translateY(8px) scale(0.92);
+        }
+        55% {
+            opacity: 1;
+            transform: translateY(0) scale(1.06);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    @keyframes videoShimmer {
+        0% {
+            background-position: 200% 0, 0 0;
+        }
+        100% {
+            background-position: -200% 0, 0 0;
+        }
+    }
+
+    @media (max-width: 991.98px) {
+        .results-shell {
+            padding: 1.5rem;
+            border-radius: 24px;
+        }
+
+        .dashboard-section {
+            margin-top: 1.25rem;
+            padding-top: 1.25rem;
+        }
+
+        .chart-wrap {
+            min-height: 280px;
+        }
+
+        .comparison-grid,
+        .filter-metrics,
+        .eval-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 575.98px) {
+        .action-bar {
+            flex-direction: column;
+        }
+
+        .action-btn {
+            justify-content: center;
+            width: 100%;
+        }
+
+        .evidence-grid img {
+            height: 180px;
+        }
+
+        .timeline-item,
+        .detection-card {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="results-dashboard">
+    <section class="results-shell">
+        <div class="d-flex flex-column flex-lg-row align-items-start justify-content-between gap-4">
+            <div>
+                <div class="dashboard-eyebrow">Operational Overview</div>
+                <span class="hero-badge">
+                    <i class="bi bi-cpu"></i>
+                    AI Analysis Dashboard
+                </span>
+                <h1 class="dashboard-title">Traffic Violation Results</h1>
+                <p class="dashboard-subtitle">
+                    Review the processed video, helmet compliance breakdown, and captured evidence in a single
+                    professional dashboard designed for fast decisions.
+                </p>
+                <div class="dashboard-header-meta">
+                    <div class="header-meta-pill">
+                        <i class="bi bi-camera-reels"></i>
+                        Review processed media
+                    </div>
+                    <div class="header-meta-pill">
+                        <i class="bi bi-graph-up"></i>
+                        Track compliance analytics
+                    </div>
+                    <div class="header-meta-pill">
+                        <i class="bi bi-folder-check"></i>
+                        Export evidence bundle
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if alert_state.show %}
+        <div class="dashboard-section">
+            <div class="alert-banner {% if alert_state.critical %}critical{% endif %}">
+                <div class="alert-body">
+                    <div class="alert-icon">
+                        <i class="bi {% if alert_state.critical %}bi-exclamation-octagon{% else %}bi-bell{% endif %}"></i>
+                    </div>
+                    <div>
+                        <div class="alert-title">
+                            {% if alert_state.critical %}Critical violation alert{% else %}Violation alert{% endif %}
+                        </div>
+                        <p class="alert-copy">{{ alert_state.message }}</p>
+                    </div>
+                </div>
+                <div class="alert-actions">
+                    <button type="button" class="mini-btn" id="playAlertToneBtn">
+                        <i class="bi bi-volume-up"></i>
+                        Sound Alert
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="dashboard-section">
+        <div class="row g-4">
+            <div class="col-md-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon accent">
+                        <i class="bi bi-bicycle"></i>
+                    </div>
+                    <div class="stat-label">Total Motorcycles</div>
+                    <div
+                        class="stat-number"
+                        data-count="{{ stats.total_motorcycles }}"
+                        data-decimals="0"
+                    >0</div>
+                    <p class="stat-note">Vehicles detected during this processed run.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon danger">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-label">Violations</div>
+                    <div
+                        class="stat-number text-danger"
+                        data-count="{{ stats.helmet_violations }}"
+                        data-decimals="0"
+                    >0</div>
+                    <p class="stat-note">Helmet compliance violations identified by the model.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon success">
+                        <i class="bi bi-stopwatch"></i>
+                    </div>
+                    <div class="stat-label">Processing Time</div>
+                    <div
+                        class="stat-number text-success"
+                        data-count="{{ processing_time }}"
+                        data-decimals="1"
+                        data-suffix="s"
+                    >0</div>
+                    <p class="stat-note">End-to-end analysis duration for this video.</p>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-3">
+                <div class="stat-card">
+                    <div class="stat-icon accent">
+                        <i class="bi bi-speedometer2"></i>
+                    </div>
+                    <div class="stat-label">Average Confidence</div>
+                    <div
+                        class="stat-number"
+                        id="averageConfidenceStat"
+                        data-count="{{ confidence_summary.average_pct or 0 }}"
+                        data-decimals="1"
+                        data-suffix="%"
+                    >0</div>
+                    <p class="stat-note">Mean model confidence across the tracked detections.</p>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <div class="dashboard-section">
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="dashboard-panel h-100">
+                    <div class="panel-heading">
+                        <div>
+                            <div class="panel-title">Processed Video</div>
+                            <p class="panel-copy">Playback of the analyzed output generated by the pipeline.</p>
+                        </div>
+                        <span class="section-badge">
+                            <i class="bi bi-play-circle"></i>
+                            Output
+                        </span>
+                    </div>
+                    <div class="video-frame">
+                        <video id="resultVideo" width="100%" controls autoplay muted loop>
+                            <source src="{{ processed_video }}?t={{ processing_time }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    <p style="color:white;" class="mt-3 mb-0">Video Path: {{ processed_video }}</p>
+                    <p id="videoErrorMessage" class="text-danger mt-2 mb-0 d-none">Processed video could not be loaded. Please verify the saved file and static path.</p>
+                    <div class="video-meta">
+                        <div class="video-meta-pill">
+                            <i class="bi bi-play-circle"></i>
+                            Auto-displays after upload
+                        </div>
+                        <div class="video-meta-pill">
+                            <i class="bi bi-aspect-ratio"></i>
+                            Responsive player
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="dashboard-panel h-100">
+                    <div class="panel-heading">
+                        <div>
+                            <div class="panel-title">Violation Timeline</div>
+                            <p class="panel-copy">Click a detected event to jump the processed video to that exact moment.</p>
+                        </div>
+                        <span class="section-badge">
+                            <i class="bi bi-clock-history"></i>
+                            Synced
+                        </span>
+                    </div>
+                    {% if violation_timeline %}
+                    <div class="timeline-panel" id="violationTimeline">
+                        {% for item in violation_timeline %}
+                        <button
+                            type="button"
+                            class="timeline-item"
+                            data-timestamp="{{ item.timestamp_seconds }}"
+                            data-track-id="{{ item.track_id }}"
+                            data-confidence="{{ item.confidence_pct or 0 }}"
+                        >
+                            {% if item.thumbnail %}
+                            <img
+                                src="{{ item.thumbnail }}"
+                                alt="Violation at {{ item.timestamp_label }}"
+                                class="timeline-thumb"
+                            >
+                            {% else %}
+                            <div class="timeline-thumb placeholder">
+                                <i class="bi bi-camera-video"></i>
+                            </div>
+                            {% endif %}
+                            <div>
+                                <div class="timeline-title">{{ item.label }}</div>
+                                <p class="timeline-copy">Track #{{ item.track_id }} detected without helmet · {{ item.confidence_pct or 0 }}% confidence</p>
+                            </div>
+                            <span class="timeline-time">
+                                <i class="bi bi-play-fill"></i>
+                                {{ item.timestamp_label }}
+                            </span>
+                        </button>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-film d-block mb-3 fs-2"></i>
+                        No violation events were captured for this run.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <div class="dashboard-section">
+        <div class="row g-4">
+            <div class="col-lg-7">
+                <div class="dashboard-panel h-100">
+                    <div class="panel-heading">
+                        <div>
+                            <div class="panel-title">Violations Per Video</div>
+                            <p class="panel-copy">Recent processed videos ranked by the number of detected violations.</p>
+                        </div>
+                        <span class="section-badge">
+                            <i class="bi bi-bar-chart"></i>
+                            Bar Chart
+                        </span>
+                    </div>
+                    <div class="chart-wrap chart-xl">
+                        <canvas id="violationsBarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="dashboard-panel h-100">
+                    <div class="panel-heading">
+                        <div>
+                            <div class="panel-title">Detection Confidence</div>
+                            <p class="panel-copy">Filter detections by confidence to reduce false positives and inspect model certainty.</p>
+                        </div>
+                        <span class="section-badge">
+                            <i class="bi bi-sliders"></i>
+                            Dynamic Filter
+                        </span>
+                    </div>
+                    <div class="filter-panel">
+                        <div class="slider-shell">
+                            <div class="slider-label">
+                                <span>Confidence Threshold</span>
+                                <span id="confidenceThresholdValue">25%</span>
+                            </div>
+                            <input id="confidenceThreshold" class="threshold-slider" type="range" min="25" max="95" step="1" value="25">
+                        </div>
+                        <div class="filter-metrics">
+                            <div class="filter-metric">
+                                <div class="filter-metric-label">Visible Detections</div>
+                                <div class="filter-metric-value" id="visibleDetectionsValue">0</div>
+                            </div>
+                            <div class="filter-metric">
+                                <div class="filter-metric-label">Visible Violations</div>
+                                <div class="filter-metric-value" id="visibleViolationsValue">0</div>
+                            </div>
+                            <div class="filter-metric">
+                                <div class="filter-metric-label">Filtered Avg Confidence</div>
+                                <div class="filter-metric-value" id="filteredAverageConfidenceValue">0%</div>
+                            </div>
+                        </div>
+                        <div class="detection-list" id="detectionList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <div class="dashboard-section">
+        <div class="row g-4">
+            <div class="col-lg-12">
+                <div class="dashboard-panel h-100">
+                    <div class="panel-heading">
+                        <div>
+                            <div class="panel-title">Analytics Overview</div>
+                            <p class="panel-copy">SaaS-style analysis across compliance share, violation volume, and processing trend.</p>
+                        </div>
+                        <span class="section-badge">
+                            <i class="bi bi-bar-chart-steps"></i>
+                            Charts
+                        </span>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-lg-5">
+                            <div class="chart-wrap chart-lg">
+                                <canvas id="helmetChart"></canvas>
+                            </div>
+                            <p class="chart-legend-note">High-confidence compliance distribution for the processed run.</p>
+                        </div>
+                        <div class="col-lg-7">
+                            <div class="chart-wrap chart-lg">
+                                <canvas id="processingTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <div class="dashboard-section">
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="dashboard-panel h-100">
+                    <div class="panel-heading">
+                        <div>
+                            <div class="panel-title">Comparison Mode</div>
+                            <p class="panel-copy">Compare this processed video with the most recent previous run.</p>
+                        </div>
+                        <span class="section-badge">
+                            <i class="bi bi-columns-gap"></i>
+                            Side by Side
+                        </span>
+                    </div>
+                    {% if comparison %}
+                    <div class="comparison-grid">
+                        <div class="comparison-card current">
+                            <div class="comparison-kicker">{{ comparison.current.label }}</div>
+                            <div class="comparison-title">{{ comparison.current.video_name }}</div>
+                            <div class="comparison-stat"><span>Total Vehicles</span><strong>{{ comparison.current.total_motorcycles }}</strong></div>
+                            <div class="comparison-stat"><span>Violations</span><strong>{{ comparison.current.violations }}</strong></div>
+                            <div class="comparison-stat"><span>Processing Time</span><strong>{{ comparison.current.processing_time }}s</strong></div>
+                        </div>
+                        <div class="comparison-card">
+                            <div class="comparison-kicker">{{ comparison.previous.label }}</div>
+                            <div class="comparison-title">{{ comparison.previous.video_name }}</div>
+                            <div class="comparison-stat"><span>Violations</span><strong>{{ comparison.previous.violations }}</strong></div>
+                            <div class="comparison-stat"><span>Processing Time</span><strong>{{ comparison.previous.processing_time }}s</strong></div>
+                        </div>
+                    </div>
+                    <div class="comparison-diff">
+                        <div class="comparison-stat">
+                            <span>Violation Difference</span>
+                            <strong class="{% if comparison.diff.violations > 0 %}diff-positive{% elif comparison.diff.violations < 0 %}diff-negative{% endif %}">
+                                {{ "%+d"|format(comparison.diff.violations) }}
+                            </strong>
+                        </div>
+                        <div class="comparison-stat">
+                            <span>Processing Time Difference</span>
+                            <strong class="{% if comparison.diff.processing_time > 0 %}diff-positive{% elif comparison.diff.processing_time < 0 %}diff-negative{% endif %}">
+                                {{ "%+.2f"|format(comparison.diff.processing_time) }}s
+                            </strong>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-columns-gap d-block mb-3 fs-2"></i>
+                        No previous processed video is available for comparison yet.
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="dashboard-panel h-100">
+                    <div class="panel-heading">
+                        <div>
+                            <div class="panel-title">Model Evaluation</div>
+                            <p class="panel-copy">Static benchmark indicators that explain the detector’s overall quality.</p>
+                        </div>
+                        <span class="section-badge">
+                            <i class="bi bi-clipboard-data"></i>
+                            Evaluation
+                        </span>
+                    </div>
+                    <div class="eval-grid">
+                        <div class="eval-card">
+                            <div class="eval-label">Precision</div>
+                            <div class="eval-value">{{ "%.0f"|format(model_evaluation.precision * 100) }}%</div>
+                        </div>
+                        <div class="eval-card">
+                            <div class="eval-label">Recall</div>
+                            <div class="eval-value">{{ "%.0f"|format(model_evaluation.recall * 100) }}%</div>
+                        </div>
+                        <div class="eval-card">
+                            <div class="eval-label">F1 Score</div>
+                            <div class="eval-value">{{ "%.0f"|format(model_evaluation.f1_score * 100) }}%</div>
+                        </div>
+                    </div>
+                    <div class="matrix-grid">
+                        <div class="matrix-cell"><strong>{{ model_evaluation.confusion_matrix.tp }}</strong><span>True Positives</span></div>
+                        <div class="matrix-cell"><strong>{{ model_evaluation.confusion_matrix.fp }}</strong><span>False Positives</span></div>
+                        <div class="matrix-cell"><strong>{{ model_evaluation.confusion_matrix.fn }}</strong><span>False Negatives</span></div>
+                        <div class="matrix-cell"><strong>{{ model_evaluation.confusion_matrix.tn }}</strong><span>True Negatives</span></div>
+                    </div>
+                    <p class="chart-legend-note">{{ model_evaluation.explanation }}</p>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <div class="dashboard-section">
+        <div class="dashboard-panel">
+            <div class="panel-heading">
+                <div>
+                    <div class="panel-title">Violation Evidence</div>
+                    <p class="panel-copy">Captured rider faces and license plates linked to the detected incidents.</p>
+                </div>
+                <span class="section-badge">
+                    <i class="bi bi-camera"></i>
+                    Evidence
+                </span>
+            </div>
+
+            {% if faces or plates %}
+            <div class="row g-4 evidence-grid">
+                {% for face in faces %}
+                <div class="col-sm-6 col-lg-3">
+                    <div class="evidence-item">
+                        <img
+                            src="{{ face }}"
+                            alt="Rider Face Evidence"
+                            class="preview-trigger"
+                            data-preview-src="{{ face }}"
+                            data-preview-title="Rider Face Evidence"
+                        >
+                        <p class="evidence-caption">Rider Face</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="evidence-section mt-4">
+                <h2>Number Plate Evidence</h2>
+
+                <div class="evidence-grid row g-4">
+                    {% for plate in plates %}
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="evidence-card evidence-item">
+                            <img
+                                src="{{ url_for('static', filename='outputs/plates/' + plate.image) }}"
+                                alt="Number Plate Evidence"
+                                class="preview-trigger"
+                                data-preview-src="{{ url_for('static', filename='outputs/plates/' + plate.image) }}"
+                                data-preview-title="Number Plate Evidence"
+                            />
+                            <p class="evidence-caption">{{ plate.text }}</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="bi bi-folder2-open d-block mb-3 fs-2"></i>
+                No evidence available in demo mode.
+            </div>
+            {% endif %}
+        </div>
+        </div>
+
+        <div class="action-bar">
+            <div id="downloadStatus" class="download-status" aria-live="polite">
+                <div class="download-status-header">
+                    <span class="download-status-title">Preparing evidence ZIP</span>
+                    <span id="downloadPercent" class="download-status-meta">Starting...</span>
+                </div>
+                <div class="download-progress">
+                    <div id="downloadProgressBar" class="download-progress-bar is-indeterminate"></div>
+                </div>
+            </div>
+            <a href="/download_evidence" id="downloadEvidenceBtn" class="btn action-btn btn-download">
+                <span class="btn-icon">
+                    <i class="bi bi-file-earmark-zip"></i>
+                </span>
+                <span class="btn-label">Download Evidence ZIP</span>
+            </a>
+            <a href="/download_report" class="btn action-btn btn-secondary-dark">
+                <i class="bi bi-filetype-pdf"></i>
+                Download PDF Report
+            </a>
+            <a href="/upload" class="btn action-btn btn-secondary-dark">
+                <i class="bi bi-arrow-repeat"></i>
+                Analyze Another Video
+            </a>
+        </div>
+    </section>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-4">
+    <div id="downloadToast" class="toast download-toast align-items-center border-0" role="status" aria-live="polite" aria-atomic="true">
+        <div class="toast-header">
+            <i class="bi bi-check-circle-fill text-success me-2"></i>
+            <strong class="me-auto">Download complete</strong>
+            <small class="text-secondary">Just now</small>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            The evidence ZIP has been downloaded successfully.
+        </div>
+    </div>
+</div>
+
+<div class="modal fade image-preview-modal" id="imagePreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="imagePreviewTitle">Evidence Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <img id="imagePreviewTarget" src="" alt="Evidence preview">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+const total = {{ stats.total_motorcycles }};
+const violations = {{ stats.helmet_violations }};
+const compliant = Math.max(total - violations, 0);
+const analytics = {{ analytics|tojson }};
+const detections = {{ detections|tojson }};
+
+function confidenceLevel(confidencePct) {
+    if (confidencePct >= 85) return 'high';
+    if (confidencePct >= 60) return 'medium';
+    return 'low';
+}
+
+function renderDetectionList(filteredDetections) {
+    const detectionList = document.getElementById('detectionList');
+    const visibleDetectionsValue = document.getElementById('visibleDetectionsValue');
+    const visibleViolationsValue = document.getElementById('visibleViolationsValue');
+    const filteredAverageConfidenceValue = document.getElementById('filteredAverageConfidenceValue');
+    const averageConfidenceStat = document.getElementById('averageConfidenceStat');
+
+    if (!detectionList || !visibleDetectionsValue || !visibleViolationsValue || !filteredAverageConfidenceValue) {
+        return;
+    }
+
+    const visibleViolations = filteredDetections.filter((item) => item.raw_label === 'no_helmet').length;
+    const averageConfidence = filteredDetections.length
+        ? filteredDetections.reduce((sum, item) => sum + Number(item.confidence_pct || 0), 0) / filteredDetections.length
+        : 0;
+
+    visibleDetectionsValue.textContent = filteredDetections.length;
+    visibleViolationsValue.textContent = visibleViolations;
+    filteredAverageConfidenceValue.textContent = `${averageConfidence.toFixed(1)}%`;
+
+    if (averageConfidenceStat) {
+        averageConfidenceStat.textContent = `${averageConfidence.toFixed(1)}%`;
+    }
+
+    if (!filteredDetections.length) {
+        detectionList.innerHTML = `
+            <div class="empty-state">
+                <i class="bi bi-funnel d-block mb-3 fs-2"></i>
+                No detections match the selected confidence threshold.
+            </div>
+        `;
+        return;
+    }
+
+    detectionList.innerHTML = filteredDetections.map((item) => {
+        const level = confidenceLevel(Number(item.confidence_pct || 0));
+        return `
+            <div class="detection-card">
+                <div>
+                    <div class="detection-title">${item.label}</div>
+                    <p class="detection-meta">Track #${item.track_id} · ${item.timestamp_label}</p>
+                </div>
+                <span class="confidence-chip ${level}">${Number(item.confidence_pct || 0).toFixed(1)}%</span>
+                <span class="timeline-time">${item.raw_label === 'no_helmet' ? 'Violation' : 'Compliant'}</span>
+            </div>
+        `;
+    }).join('');
+}
+
+new Chart(document.getElementById('helmetChart'), {
+    type: 'doughnut',
+    data: {
+        labels: ['Helmet Worn', 'No Helmet'],
+        datasets: [{
+            data: [compliant, violations],
+            backgroundColor: [
+                'rgba(56, 189, 248, 0.95)',
+                'rgba(251, 113, 133, 0.95)'
+            ],
+            borderColor: [
+                'rgba(15, 23, 42, 0.95)',
+                'rgba(15, 23, 42, 0.95)'
+            ],
+            borderWidth: 6,
+            hoverOffset: 12,
+            spacing: 3
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        cutout: '74%',
+        plugins: {
+            legend: {
+                position: 'bottom',
+                labels: {
+                    color: '#cbd5e1',
+                    usePointStyle: true,
+                    pointStyle: 'circle',
+                    padding: 20,
+                    font: {
+                        family: 'Manrope',
+                        size: 12,
+                        weight: '600'
+                    }
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(15, 23, 42, 0.96)',
+                titleColor: '#f8fafc',
+                bodyColor: '#cbd5e1',
+                borderColor: 'rgba(148, 163, 184, 0.25)',
+                borderWidth: 1,
+                padding: 14
+            }
+        }
+    }
+});
+
+const chartGridColor = 'rgba(148, 163, 184, 0.12)';
+const chartTickColor = '#94a3b8';
+
+if (analytics.labels.length) {
+    new Chart(document.getElementById('violationsBarChart'), {
+        type: 'bar',
+        data: {
+            labels: analytics.labels,
+            datasets: [{
+                label: 'Violations',
+                data: analytics.violations_per_video,
+                borderRadius: 12,
+                maxBarThickness: 42,
+                backgroundColor: [
+                    'rgba(56, 189, 248, 0.9)',
+                    'rgba(14, 165, 233, 0.86)',
+                    'rgba(96, 165, 250, 0.84)',
+                    'rgba(125, 211, 252, 0.82)',
+                    'rgba(59, 130, 246, 0.82)',
+                    'rgba(103, 232, 249, 0.82)'
+                ],
+                borderColor: 'rgba(186, 230, 253, 0.35)',
+                borderWidth: 1.5
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.96)',
+                    titleColor: '#f8fafc',
+                    bodyColor: '#cbd5e1',
+                    borderColor: 'rgba(148, 163, 184, 0.25)',
+                    borderWidth: 1,
+                    callbacks: {
+                        title: (items) => analytics.full_labels[items[0].dataIndex]
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: chartTickColor,
+                        maxRotation: 0,
+                        minRotation: 0
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: chartTickColor,
+                        precision: 0
+                    },
+                    grid: {
+                        color: chartGridColor
+                    }
+                }
+            }
+        }
+    });
+
+    new Chart(document.getElementById('processingTrendChart'), {
+        type: 'line',
+        data: {
+            labels: analytics.labels,
+            datasets: [{
+                label: 'Processing Time (s)',
+                data: analytics.processing_time_trend,
+                fill: true,
+                tension: 0.35,
+                borderWidth: 3,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: '#f8fafc',
+                pointBorderColor: '#38bdf8',
+                pointBorderWidth: 3,
+                borderColor: 'rgba(74, 222, 128, 0.95)',
+                backgroundColor: 'rgba(74, 222, 128, 0.12)'
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.96)',
+                    titleColor: '#f8fafc',
+                    bodyColor: '#cbd5e1',
+                    borderColor: 'rgba(148, 163, 184, 0.25)',
+                    borderWidth: 1,
+                    callbacks: {
+                        title: (items) => analytics.full_labels[items[0].dataIndex],
+                        label: (item) => `${item.formattedValue}s`
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false
+                    },
+                    ticks: {
+                        color: chartTickColor,
+                        maxRotation: 0,
+                        minRotation: 0
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        color: chartTickColor,
+                        callback: (value) => `${value}s`
+                    },
+                    grid: {
+                        color: chartGridColor
+                    }
+                }
+            }
+        }
+    });
+}
+</script>
+
+<script>
+const confidenceThreshold = document.getElementById('confidenceThreshold');
+const confidenceThresholdValue = document.getElementById('confidenceThresholdValue');
+
+function applyConfidenceThreshold(threshold) {
+    const filteredDetections = detections.filter((item) => Number(item.confidence_pct || 0) >= threshold);
+    renderDetectionList(filteredDetections);
+
+    document.querySelectorAll('.timeline-item').forEach((item) => {
+        const confidence = Number(item.dataset.confidence || 0);
+        item.style.display = confidence >= threshold ? '' : 'none';
+    });
+}
+
+if (confidenceThreshold && confidenceThresholdValue) {
+    const updateThreshold = () => {
+        const threshold = Number(confidenceThreshold.value);
+        confidenceThresholdValue.textContent = `${threshold}%`;
+        applyConfidenceThreshold(threshold);
+    };
+
+    confidenceThreshold.addEventListener('input', updateThreshold);
+    updateThreshold();
+} else {
+    renderDetectionList(detections);
+}
+
+document.querySelectorAll('.stat-number').forEach((counter, index) => {
+    const target = parseFloat(counter.dataset.count || '0');
+    const decimals = parseInt(counter.dataset.decimals || '0', 10);
+    const suffix = counter.dataset.suffix || '';
+    const duration = 1450 + (index * 220);
+    const startTime = performance.now();
+    const locale = 'en-US';
+
+    function formatValue(value) {
+        return `${value.toLocaleString(locale, {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals
+        })}${suffix}`;
+    }
+
+    function easeOutExpo(progress) {
+        return progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+    }
+
+    function update(now) {
+        const progress = Math.min((now - startTime) / duration, 1);
+        const eased = easeOutExpo(progress);
+        const current = target * eased;
+        counter.textContent = formatValue(current);
+        counter.classList.add('is-counting');
+
+        if (progress < 1) {
+            requestAnimationFrame(update);
+        } else {
+            counter.textContent = formatValue(target);
+            counter.classList.remove('is-counting');
+            counter.classList.add('is-complete');
+        }
+    }
+
+    requestAnimationFrame(update);
+});
+
+const resultVideo = document.getElementById('resultVideo');
+const videoFrame = document.querySelector('.video-frame');
+const videoErrorMessage = document.getElementById('videoErrorMessage');
+
+if (resultVideo) {
+    const markVideoReady = () => {
+        if (videoFrame) {
+            videoFrame.classList.add('is-ready');
+            videoFrame.classList.remove('has-error');
+        }
+    };
+
+    resultVideo.addEventListener('loadeddata', markVideoReady);
+    resultVideo.addEventListener('canplay', markVideoReady);
+
+    if (resultVideo.readyState >= 2) {
+        markVideoReady();
+    }
+
+    resultVideo.addEventListener('error', function() {
+        console.error('Video failed to load:', this.currentSrc || this.src);
+        if (videoFrame) {
+            videoFrame.classList.add('has-error');
+            videoFrame.classList.remove('is-ready');
+        }
+        if (videoErrorMessage) {
+            videoErrorMessage.classList.remove('d-none');
+        }
+    });
+}
+
+const timelineItems = Array.from(document.querySelectorAll('.timeline-item'));
+
+if (resultVideo && timelineItems.length) {
+    const setActiveTimelineItem = (currentTime) => {
+        let activeItem = null;
+
+        timelineItems.forEach((item) => {
+            const timestamp = parseFloat(item.dataset.timestamp || '0');
+            if (currentTime >= timestamp - 0.35) {
+                activeItem = item;
+            }
+            item.classList.remove('active');
+        });
+
+        if (!activeItem) {
+            activeItem = timelineItems[0];
+        }
+
+        if (activeItem) {
+            activeItem.classList.add('active');
+        }
+    };
+
+    timelineItems.forEach((item) => {
+        item.addEventListener('click', () => {
+            const timestamp = parseFloat(item.dataset.timestamp || '0');
+            resultVideo.currentTime = timestamp;
+            const playAttempt = resultVideo.play();
+            if (playAttempt && typeof playAttempt.catch === 'function') {
+                playAttempt.catch(() => {});
+            }
+            setActiveTimelineItem(timestamp);
+        });
+    });
+
+    resultVideo.addEventListener('timeupdate', () => {
+        setActiveTimelineItem(resultVideo.currentTime);
+    });
+
+    resultVideo.addEventListener('loadedmetadata', () => {
+        setActiveTimelineItem(resultVideo.currentTime || 0);
+    });
+}
+
+const playAlertToneBtn = document.getElementById('playAlertToneBtn');
+
+function playAlertTone() {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) {
+        return;
+    }
+
+    const audioContext = new AudioContextClass();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(880, audioContext.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(660, audioContext.currentTime + 0.25);
+    gainNode.gain.setValueAtTime(0.0001, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.06, audioContext.currentTime + 0.02);
+    gainNode.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + 0.35);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    oscillator.start();
+    oscillator.stop(audioContext.currentTime + 0.35);
+}
+
+if (playAlertToneBtn) {
+    playAlertToneBtn.addEventListener('click', playAlertTone);
+    window.setTimeout(() => {
+        playAlertTone();
+    }, 400);
+}
+
+const imagePreviewModalEl = document.getElementById('imagePreviewModal');
+const imagePreviewTarget = document.getElementById('imagePreviewTarget');
+const imagePreviewTitle = document.getElementById('imagePreviewTitle');
+
+if (imagePreviewModalEl && imagePreviewTarget && imagePreviewTitle) {
+    const imagePreviewModal = new bootstrap.Modal(imagePreviewModalEl);
+
+    document.querySelectorAll('.preview-trigger').forEach((image) => {
+        image.addEventListener('click', () => {
+            imagePreviewTarget.src = image.dataset.previewSrc || image.src;
+            imagePreviewTarget.alt = image.alt || 'Evidence preview';
+            imagePreviewTitle.textContent = image.dataset.previewTitle || 'Evidence Preview';
+            imagePreviewModal.show();
+        });
+    });
+
+    imagePreviewModalEl.addEventListener('hidden.bs.modal', () => {
+        imagePreviewTarget.src = '';
+    });
+}
+
+const downloadEvidenceBtn = document.getElementById('downloadEvidenceBtn');
+const downloadStatus = document.getElementById('downloadStatus');
+const downloadPercent = document.getElementById('downloadPercent');
+const downloadProgressBar = document.getElementById('downloadProgressBar');
+const downloadToastEl = document.getElementById('downloadToast');
+
+if (downloadEvidenceBtn && downloadStatus && downloadPercent && downloadProgressBar && downloadToastEl) {
+    const downloadToast = new bootstrap.Toast(downloadToastEl, { delay: 3200 });
+    const defaultButtonLabel = downloadEvidenceBtn.querySelector('.btn-label').textContent;
+
+    const setDownloadIdle = () => {
+        downloadEvidenceBtn.classList.remove('is-loading');
+        downloadEvidenceBtn.querySelector('.btn-icon i').className = 'bi bi-file-earmark-zip';
+        downloadEvidenceBtn.querySelector('.btn-label').textContent = defaultButtonLabel;
+        downloadStatus.classList.remove('is-visible');
+        downloadProgressBar.style.width = '0%';
+        downloadProgressBar.classList.add('is-indeterminate');
+        downloadPercent.textContent = 'Starting...';
+    };
+
+    const getFilenameFromDisposition = (disposition) => {
+        if (!disposition) {
+            return 'violation_evidence.zip';
+        }
+
+        const utfMatch = disposition.match(/filename\*=UTF-8''([^;]+)/i);
+        if (utfMatch && utfMatch[1]) {
+            return decodeURIComponent(utfMatch[1]);
+        }
+
+        const asciiMatch = disposition.match(/filename="?([^"]+)"?/i);
+        return asciiMatch && asciiMatch[1] ? asciiMatch[1] : 'violation_evidence.zip';
+    };
+
+    downloadEvidenceBtn.addEventListener('click', async (event) => {
+        event.preventDefault();
+
+        try {
+            downloadEvidenceBtn.classList.add('is-loading');
+            downloadEvidenceBtn.querySelector('.btn-icon i').className = 'bi bi-arrow-repeat';
+            downloadEvidenceBtn.querySelector('.btn-label').textContent = 'Preparing Download...';
+            downloadStatus.classList.add('is-visible');
+
+            const response = await fetch(downloadEvidenceBtn.href, {
+                method: 'GET',
+                credentials: 'same-origin'
+            });
+
+            if (!response.ok) {
+                throw new Error(`Download failed with status ${response.status}`);
+            }
+
+            const contentLength = Number(response.headers.get('Content-Length') || 0);
+            const disposition = response.headers.get('Content-Disposition');
+            const filename = getFilenameFromDisposition(disposition);
+
+            let blob;
+
+            if (response.body && typeof response.body.getReader === 'function') {
+                const reader = response.body.getReader();
+                const chunks = [];
+                let received = 0;
+
+                if (contentLength > 0) {
+                    downloadProgressBar.classList.remove('is-indeterminate');
+                } else {
+                    downloadPercent.textContent = 'Preparing file...';
+                    downloadProgressBar.classList.add('is-indeterminate');
+                }
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) {
+                        break;
+                    }
+
+                    chunks.push(value);
+                    received += value.length;
+
+                    if (contentLength > 0) {
+                        const progress = Math.min((received / contentLength) * 100, 100);
+                        downloadProgressBar.style.width = `${progress}%`;
+                        downloadPercent.textContent = `${Math.round(progress)}%`;
+                    }
+                }
+
+                blob = new Blob(chunks, { type: 'application/zip' });
+            } else {
+                downloadPercent.textContent = 'Preparing file...';
+                blob = await response.blob();
+            }
+
+            downloadEvidenceBtn.querySelector('.btn-icon i').className = 'bi bi-check2-circle';
+            downloadEvidenceBtn.querySelector('.btn-label').textContent = 'Download Ready';
+            downloadProgressBar.classList.remove('is-indeterminate');
+            downloadProgressBar.style.width = '100%';
+            downloadPercent.textContent = '100%';
+
+            const downloadUrl = window.URL.createObjectURL(blob);
+            const tempLink = document.createElement('a');
+            tempLink.href = downloadUrl;
+            tempLink.download = filename;
+            document.body.appendChild(tempLink);
+            tempLink.click();
+            tempLink.remove();
+            window.URL.revokeObjectURL(downloadUrl);
+
+            downloadToast.show();
+        } catch (error) {
+            downloadEvidenceBtn.querySelector('.btn-icon i').className = 'bi bi-exclamation-circle';
+            downloadEvidenceBtn.querySelector('.btn-label').textContent = 'Download Failed';
+            downloadPercent.textContent = 'Please try again';
+            downloadProgressBar.classList.remove('is-indeterminate');
+            downloadProgressBar.style.width = '100%';
+            downloadProgressBar.style.background = 'linear-gradient(90deg, #fb7185, #f43f5e)';
+            window.setTimeout(() => {
+                downloadProgressBar.style.background = 'linear-gradient(90deg, #0ea5e9, #38bdf8)';
+                setDownloadIdle();
+            }, 2200);
+            return;
+        }
+
+        window.setTimeout(() => {
+            setDownloadIdle();
+        }, 1800);
+    });
+}
+</script>
+{% endblock %}
