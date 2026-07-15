@@ -386,7 +386,13 @@ cd ..
 
 ### 4. Configure Environment
 
-Create a `.env` file in the project root. Refer to the configuration table below for available settings:
+Copy the provided `.env.example` to `.env` and update values as needed:
+
+```bash
+cp .env.example .env
+```
+
+Refer to the configuration table below for available settings:
 
 | Variable | Description | Default |
 |---|---|---|
